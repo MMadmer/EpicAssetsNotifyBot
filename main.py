@@ -36,6 +36,15 @@ def get_free_assets():
         "Accept-Language": "en-US,en;q=0.5",
         "Referer": "https://www.unrealengine.com/",
         "Origin": "https://www.unrealengine.com",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache"
     }
 
     session = requests.Session()
@@ -65,29 +74,40 @@ def get_free_assets():
         image_element = element.find('img')  # Find the image of the asset
         if name_element and link_element and image_element:
             asset_name = name_element.text.strip()  # Get the text of the name element
-            asset_link = "https://www.unrealengine.com" + link_element[
-                'href']  # Get the href attribute of the link element
+            # Get the href attribute of the link element
+            asset_link = "https://www.unrealengine.com" + link_element['href']
             asset_image = image_element['src']  # Get the src attribute of the image element
-            assets.append(
-                {'name': asset_name, 'link': asset_link, 'image': asset_image})  # Add the asset to the list
+            assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})  # Add the asset to the list
 
     if not assets:
         print("No assets found in the 'Free For The Month' section.")
     return assets
 
 
+def is_admin(ctx: commands.Context):
+    return ctx.guild is not None and ctx.author.guild_permissions.administrator
+
+
+def is_dm(ctx: commands.Context):
+    return ctx.guild is None
+
+
 class EpicAssetsNotifyBot(commands.Bot):
-    def __init__(self, command_prefix, token):
+    def __init__(self, command_prefix: str, token: str):
         intents = discord.Intents.default()
         intents.message_content = True  # Enable message content intents
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.token = token
-        self.servers_data = {}  # Store data for each server
+        self.subscribed_channels = []  # Store subscribed channels
+        self.assets_list = None  # Store the list of assets
+        self.next_check_time = None  # Store the next check time
+        self.delete_after = 10  # Time after which the message will be deleted
         self.add_commands()  # Register commands
 
     async def on_ready(self):
         # This function is called when the bot is ready
         print(f'Logged in as {self.user}')
+        self.loop.create_task(self.set_daily_check())  # Start the daily check task
 
     def run_bot(self):
         # This function runs the bot with the provided token
@@ -95,64 +115,90 @@ class EpicAssetsNotifyBot(commands.Bot):
 
     def add_commands(self):
         # This function registers commands
-        @self.command(name='start')
-        @commands.has_permissions(administrator=True)
-        async def start(ctx):
-            guild_id = ctx.guild.id
-            if guild_id in self.servers_data:
-                await ctx.send("Asset tracking is already running. Please stop it first before starting again.")
+        @self.command(name='sub')
+        async def subscribe(ctx: commands.Context):
+            if not is_admin(ctx) and not is_dm(ctx):
+                await ctx.send("You do not have the necessary permissions to run this command.")
                 return
 
-            self.servers_data[guild_id] = {
-                'current_channel': ctx.channel,
-                'assets_list': None,
-                'check_task': self.loop.create_task(self.set_daily_check(ctx.guild.id))
-            }
-            await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
+            channel_id = ctx.channel.id
+            if channel_id in self.subscribed_channels:
+                await ctx.send("This channel is already subscribed.")
+                return
 
-        @self.command(name='stop')
-        @commands.has_permissions(administrator=True)
-        async def stop(ctx):
-            guild_id = ctx.guild.id
-            if guild_id in self.servers_data:
-                self.servers_data[guild_id]['check_task'].cancel()  # Cancel the current timer
-                del self.servers_data[guild_id]  # Remove the server data
-                await ctx.send("Stopped watching for asset updates and cleared the asset list.")
+            self.subscribed_channels.append(channel_id)
+
+            if is_dm(ctx):
+                await ctx.send(f"Subscribed to asset updates")
             else:
-                await ctx.send("No active watch task to stop.")
+                await ctx.send(f"Subscribed to asset updates in: {ctx.channel.name}")
+
+        @self.command(name='unsub')
+        async def unsubscribe(ctx: commands.Context):
+            if not is_admin(ctx) and not is_dm(ctx):
+                await ctx.send("You do not have the necessary permissions to run this command.")
+                return
+
+            channel_id = ctx.channel.id
+            if channel_id in self.subscribed_channels:
+                self.subscribed_channels.remove(channel_id)
+                await ctx.send("Unsubscribed from asset updates.")
+            else:
+                await ctx.send("This channel is not subscribed.")
+
+        @self.command(name='show')
+        async def show_assets(ctx: commands.Context):
+            if self.assets_list:
+                month_name = get_month_name()
+                message = f"## {month_name} ассеты от эпиков\n"
+                files = []
+                for asset in self.assets_list:
+                    message += f"- [{asset['name']}](<{asset['link']}>)\n"
+                    image_data = requests.get(asset['image']).content
+                    files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+
+                await ctx.send(message, files=files)
+            else:
+                message = f"No assets found or the list is empty.\n-# This message will be deleted after {self.delete_after} seconds "
+                sent_message = await ctx.send(message)
+                await asyncio.sleep(self.delete_after)
+                await sent_message.delete()
 
         @self.command(name='time')
-        async def time_left(ctx):
-            delete_after = 10
-            guild_id = ctx.guild.id
-            if guild_id in self.servers_data and 'next_check_time' in self.servers_data[guild_id]:
+        async def time_left(ctx: commands.Context):
+            if self.next_check_time:
                 now = datetime.now()
-                time_remaining = self.servers_data[guild_id]['next_check_time'] - now
+                time_remaining = self.next_check_time - now
                 hours, remainder = divmod(time_remaining.seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
                 message = (f"Time left until next check: {hours:02}:{minutes:02}:{seconds:02}\n"
-                           f"-# Сообщение будет удалено через {delete_after} секунд")
-                await ctx.send(message, delete_after=delete_after)
+                           f"-# This message will be deleted after {self.delete_after} seconds")
+                sent_message = await ctx.send(message)
+                await asyncio.sleep(self.delete_after)
+                await sent_message.delete()
             else:
-                await ctx.send("No active watch task.", delete_after=delete_after)
+                message = (f"No scheduled check found.\n"
+                           f"-# This message will be deleted after {self.delete_after} seconds")
+                sent_message = await ctx.send(message)
+                await asyncio.sleep(self.delete_after)
+                await sent_message.delete()
 
-        @start.error
-        @stop.error
-        async def on_command_error(ctx, error):
+        @subscribe.error
+        @unsubscribe.error
+        async def on_command_error(ctx: commands.Context, error: commands.CommandError):
             if isinstance(error, commands.MissingPermissions):
                 await ctx.send("You do not have the necessary permissions to run this command.")
 
-    async def set_daily_check(self, guild_id):
+    async def set_daily_check(self):
         while True:
-            self.servers_data[guild_id]['next_check_time'] = datetime.now() + timedelta(days=1)
-            await self.check_and_notify_assets(guild_id)
+            self.next_check_time = datetime.now() + timedelta(days=1)
+            await self.check_and_notify_assets()
             await asyncio.sleep(24 * 60 * 60)
 
-    async def check_and_notify_assets(self, guild_id):
+    async def check_and_notify_assets(self):
         new_assets = get_free_assets()  # Get the current list of free assets
-        if new_assets and new_assets != self.servers_data[guild_id][
-            'assets_list']:  # Check if the list of assets has changed
-            self.servers_data[guild_id]['assets_list'] = new_assets  # Update the stored list of assets
+        if new_assets and new_assets != self.assets_list:  # Check if the list of assets has changed
+            self.assets_list = new_assets  # Update the stored list of assets
             month_name = get_month_name()
             message = f"## {month_name} ассеты от эпиков\n"
             files = []
@@ -160,8 +206,11 @@ class EpicAssetsNotifyBot(commands.Bot):
                 message += f"- [{asset['name']}](<{asset['link']}>)\n"  # Format the message
                 image_data = requests.get(asset['image']).content
                 files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
-            await self.servers_data[guild_id]['current_channel'].send(message,
-                                                                      files=files)  # Send the message and files to the current channel
+
+            for channel_id in self.subscribed_channels:
+                channel = self.get_channel(channel_id)
+                if channel:
+                    await channel.send(message, files=files)  # Send the message and files to the subscribed channels
 
 
 if __name__ == '__main__':

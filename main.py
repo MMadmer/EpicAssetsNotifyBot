@@ -119,7 +119,7 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.assets_list = load_data('assets_backup.json')  # Load assets list from backup
         self.next_check_time = None  # Store the next check time
         self.delete_after = 10  # Time after which the message will be deleted
-        self.backup_delay = 10  # Backup delay in seconds
+        self.backup_delay = 900  # Backup delay in seconds
 
     async def on_ready(self):
         # This function is called when the bot is ready

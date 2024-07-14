@@ -3,7 +3,7 @@ from discord.ext import commands
 import requests
 from bs4 import BeautifulSoup
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 
 
@@ -36,6 +36,7 @@ class EpicGamesBot(commands.Bot):
         self.current_channel = None  # Store the current channel for notifications
         self.assets_list = None  # Store the list of assets
         self.check_task = None  # Store the task for the timer
+        self.next_check_time = None  # Store the time of the next check
         self.add_commands()  # Register commands
 
     async def on_ready(self):
@@ -48,16 +49,19 @@ class EpicGamesBot(commands.Bot):
 
     def add_commands(self):
         # This function registers commands
-        @self.command(name='assets_start')
+        @self.command(name='start')
         @commands.has_permissions(administrator=True)
         async def start(ctx):
-            self.current_channel = ctx.channel  # Set the current channel for notifications
-            await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
             if self.check_task:
-                self.check_task.cancel()  # Cancel the previous timer if it was set
-            self.check_task = self.loop.create_task(self.set_daily_check())  # Create a new daily check task
+                await ctx.send("Asset tracking is already running. Please stop it first before starting again.")
+                return
 
-        @self.command(name='assets_stop')
+            self.current_channel = ctx.channel  # Set the current channel for notifications
+            self.assets_list = None  # Clear the list of assets
+            self.check_task = self.loop.create_task(self.set_daily_check())  # Create a new daily check task
+            await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
+
+        @self.command(name='stop')
         @commands.has_permissions(administrator=True)
         async def stop(ctx):
             if self.check_task:
@@ -68,6 +72,20 @@ class EpicGamesBot(commands.Bot):
             else:
                 await ctx.send("No active watch task to stop.")
 
+        @self.command(name='time')
+        async def time_left(ctx):
+            delete_after = 10
+            if self.next_check_time:
+                now = datetime.now()
+                time_remaining = self.next_check_time - now
+                hours, remainder = divmod(time_remaining.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                message = (f"Time left until next check: {hours:02}:{minutes:02}:{seconds:02}\n"
+                           f"-# Сообщение будет удалено через {delete_after} секунд")
+                await ctx.send(message, delete_after=delete_after)
+            else:
+                await ctx.send("No active watch task.", delete_after=delete_after)
+
         @start.error
         @stop.error
         async def on_command_error(ctx, error):
@@ -77,6 +95,7 @@ class EpicGamesBot(commands.Bot):
     async def set_daily_check(self):
         # This function sets a daily check for asset updates
         while True:
+            self.next_check_time = datetime.now() + timedelta(days=1)
             await self.check_and_notify_assets()  # Check and notify about asset updates
             await asyncio.sleep(24 * 60 * 60)  # Wait for a day (24 hours)
 
@@ -148,7 +167,7 @@ class EpicGamesBot(commands.Bot):
 
 if __name__ == '__main__':
     TOKEN = "YOUR_TOKEN_HERE"  # Replace with your bot token
-    COMMAND_PREFIX = '/'
+    COMMAND_PREFIX = '/assets '
 
     bot = EpicGamesBot(command_prefix=COMMAND_PREFIX, token=TOKEN)
     bot.run_bot()

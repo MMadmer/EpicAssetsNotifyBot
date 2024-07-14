@@ -17,8 +17,8 @@ The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal 
 
 ### Admin Commands
 
-- `/assets sub`: Subscribes the current channel to asset updates. Can only be run by administrators.
-- `/assets unsub`: Unsubscribes the current channel from asset updates. Can only be run by administrators.
+- `/assets sub`: Subscribes the current server channel to asset updates. Can only be run by administrators.
+- `/assets unsub`: Unsubscribes the server from asset updates. Can only be run by administrators.
 
 ### General Commands
 

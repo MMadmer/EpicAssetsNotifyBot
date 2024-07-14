@@ -1,5 +1,7 @@
 # Epic Games Free Assets Tracker Bot
 
+![EpicAssetsNotifyBot](https://github.com/user-attachments/assets/c69a0594-4801-4b74-a2cc-bde7909922b1)
+
 ## Overview
 
 The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal Engine developers stay updated with the latest free assets available on the Epic Games Store. This bot provides an automated solution for tracking, notifying, and displaying the newest free assets of the month, ensuring developers don't miss out on valuable resources.

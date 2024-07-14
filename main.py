@@ -141,18 +141,45 @@ class EpicAssetsNotifyBot(commands.Bot):
 
             if is_dm(ctx):
                 user_id = ctx.author.id
-                if user_id in self.subscribed_users:
+                if any(user['id'] == user_id for user in self.subscribed_users):
                     await ctx.send("You are already subscribed.")
                     return
-                self.subscribed_users.append(user_id)
+                self.subscribed_users.append({'id': user_id, 'shown_assets': False})
                 await ctx.send("Subscribed to asset updates")
+
+                # Check and send current assets if not shown
+                if self.assets_list and not self.subscribed_users[-1]['shown_assets']:
+                    month_name = get_month_name()
+                    message = f"## {month_name} ассеты от эпиков\n"
+                    files = []
+                    for asset in self.assets_list:
+                        message += f"- [{asset['name']}](<{asset['link']}>)\n"
+                        image_data = requests.get(asset['image']).content
+                        files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+                    user = await self.fetch_user(user_id)
+                    await user.send(message, files=files)
+                    self.subscribed_users[-1]['shown_assets'] = True
+
             else:
                 channel_id = ctx.channel.id
-                if channel_id in self.subscribed_channels:
+                if any(channel['id'] == channel_id for channel in self.subscribed_channels):
                     await ctx.send("This channel is already subscribed.")
                     return
-                self.subscribed_channels.append(channel_id)
+                self.subscribed_channels.append({'id': channel_id, 'shown_assets': False})
                 await ctx.send(f"Subscribed to asset updates in: {ctx.channel.name}")
+
+                # Check and send current assets if not shown
+                if self.assets_list and not self.subscribed_channels[-1]['shown_assets']:
+                    month_name = get_month_name()
+                    message = f"## {month_name} ассеты от эпиков\n"
+                    files = []
+                    for asset in self.assets_list:
+                        message += f"- [{asset['name']}](<{asset['link']}>)\n"
+                        image_data = requests.get(asset['image']).content
+                        files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+                    channel = self.get_channel(channel_id)
+                    await channel.send(message, files=files)
+                    self.subscribed_channels[-1]['shown_assets'] = True
 
         @self.command(name='unsub')
         async def unsubscribe(ctx: commands.Context):
@@ -162,37 +189,20 @@ class EpicAssetsNotifyBot(commands.Bot):
 
             if is_dm(ctx):
                 user_id = ctx.author.id
-                if user_id in self.subscribed_users:
-                    self.subscribed_users.remove(user_id)
-                    await ctx.send("Unsubscribed from asset updates.")
-                else:
-                    await ctx.send("You are not subscribed.")
+                for user in self.subscribed_users:
+                    if user['id'] == user_id:
+                        self.subscribed_users.remove(user)
+                        await ctx.send("Unsubscribed from asset updates.")
+                        return
+                await ctx.send("You are not subscribed.")
             else:
                 channel_id = ctx.channel.id
-                if channel_id in self.subscribed_channels:
-                    self.subscribed_channels.remove(channel_id)
-                    await ctx.send("Unsubscribed from asset updates.")
-                else:
-                    await ctx.send("This channel is not subscribed.")
-
-        @self.command(name='show')
-        async def show_assets(ctx: commands.Context):
-            if self.assets_list:
-                month_name = get_month_name()
-                message = f"## {month_name} ассеты от эпиков\n"
-                files = []
-                for asset in self.assets_list:
-                    message += f"- [{asset['name']}](<{asset['link']}>)\n"
-                    image_data = requests.get(asset['image']).content
-                    files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
-
-                await ctx.send(message, files=files)
-            else:
-                message = f"No assets found or the list is empty.\n" \
-                          "-# This message will be deleted after {self.delete_after} seconds"
-                sent_message = await ctx.send(message)
-                await asyncio.sleep(self.delete_after)
-                await sent_message.delete()
+                for channel in self.subscribed_channels:
+                    if channel['id'] == channel_id:
+                        self.subscribed_channels.remove(channel)
+                        await ctx.send("Unsubscribed from asset updates.")
+                        return
+                await ctx.send("This channel is not subscribed.")
 
         @self.command(name='time')
         async def time_left(ctx: commands.Context):
@@ -237,15 +247,20 @@ class EpicAssetsNotifyBot(commands.Bot):
                 image_data = requests.get(asset['image']).content
                 files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
 
-            for channel_id in self.subscribed_channels:
-                channel = self.get_channel(channel_id)
-                if channel:
-                    await channel.send(message, files=files)  # Send the message and files to the subscribed channels
+            for channel in self.subscribed_channels:
+                channel_id = channel['id']
+                channel_obj = self.get_channel(channel_id)
+                if channel_obj:
+                    await channel_obj.send(message,
+                                           files=files)  # Send the message and files to the subscribed channels
+                    channel['shown_assets'] = True
 
-            for user_id in self.subscribed_users:
-                user = await self.fetch_user(user_id)
-                if user:
-                    await user.send(message, files=files)  # Send the message and files to subscribed users
+            for user in self.subscribed_users:
+                user_id = user['id']
+                user_obj = await self.fetch_user(user_id)
+                if user_obj:
+                    await user_obj.send(message, files=files)  # Send the message and files to subscribed users
+                    user['shown_assets'] = True
 
     async def backup_data(self):
         while True:

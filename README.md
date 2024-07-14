@@ -32,7 +32,7 @@ The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/epic-games-asset-tracker-bot.git
+   git clone https://github.com/MMadmer/EpicAssetsNotifyBot.git
    ```
 2. Install the required dependencies:
    ```bash

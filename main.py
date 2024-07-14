@@ -76,16 +76,13 @@ def get_free_assets():
     return assets
 
 
-class EpicGamesBot(commands.Bot):
+class EpicAssetsNotifyBot(commands.Bot):
     def __init__(self, command_prefix, token):
         intents = discord.Intents.default()
         intents.message_content = True  # Enable message content intents
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.token = token
-        self.current_channel = None  # Store the current channel for notifications
-        self.assets_list = None  # Store the list of assets
-        self.check_task = None  # Store the task for the timer
-        self.next_check_time = None  # Store the time of the next check
+        self.servers_data = {}  # Store data for each server
         self.add_commands()  # Register commands
 
     async def on_ready(self):
@@ -101,22 +98,25 @@ class EpicGamesBot(commands.Bot):
         @self.command(name='start')
         @commands.has_permissions(administrator=True)
         async def start(ctx):
-            if self.check_task:
+            guild_id = ctx.guild.id
+            if guild_id in self.servers_data:
                 await ctx.send("Asset tracking is already running. Please stop it first before starting again.")
                 return
 
-            self.current_channel = ctx.channel  # Set the current channel for notifications
-            self.assets_list = None  # Clear the list of assets
-            self.check_task = self.loop.create_task(self.set_daily_check())  # Create a new daily check task
+            self.servers_data[guild_id] = {
+                'current_channel': ctx.channel,
+                'assets_list': None,
+                'check_task': self.loop.create_task(self.set_daily_check(ctx.guild.id))
+            }
             await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
 
         @self.command(name='stop')
         @commands.has_permissions(administrator=True)
         async def stop(ctx):
-            if self.check_task:
-                self.check_task.cancel()  # Cancel the current timer
-                self.check_task = None
-                self.assets_list = None  # Clear the list of assets
+            guild_id = ctx.guild.id
+            if guild_id in self.servers_data:
+                self.servers_data[guild_id]['check_task'].cancel()  # Cancel the current timer
+                del self.servers_data[guild_id]  # Remove the server data
                 await ctx.send("Stopped watching for asset updates and cleared the asset list.")
             else:
                 await ctx.send("No active watch task to stop.")
@@ -124,9 +124,10 @@ class EpicGamesBot(commands.Bot):
         @self.command(name='time')
         async def time_left(ctx):
             delete_after = 10
-            if self.next_check_time:
+            guild_id = ctx.guild.id
+            if guild_id in self.servers_data and 'next_check_time' in self.servers_data[guild_id]:
                 now = datetime.now()
-                time_remaining = self.next_check_time - now
+                time_remaining = self.servers_data[guild_id]['next_check_time'] - now
                 hours, remainder = divmod(time_remaining.seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
                 message = (f"Time left until next check: {hours:02}:{minutes:02}:{seconds:02}\n"
@@ -141,22 +142,17 @@ class EpicGamesBot(commands.Bot):
             if isinstance(error, commands.MissingPermissions):
                 await ctx.send("You do not have the necessary permissions to run this command.")
 
-    async def set_daily_check(self):
-        # This function sets a daily check for asset updates
+    async def set_daily_check(self, guild_id):
         while True:
-            self.next_check_time = datetime.now() + timedelta(days=1)
-            await self.check_and_notify_assets()  # Check and notify about asset updates
-            await asyncio.sleep(24 * 60 * 60)  # Wait for a day (24 hours)
+            self.servers_data[guild_id]['next_check_time'] = datetime.now() + timedelta(days=1)
+            await self.check_and_notify_assets(guild_id)
+            await asyncio.sleep(24 * 60 * 60)
 
-    async def check_and_notify_assets(self):
-        # This function checks for asset updates and notifies the current channel if there are new assets
-        if not self.current_channel:
-            print("Current channel is not set.")
-            return
-
+    async def check_and_notify_assets(self, guild_id):
         new_assets = get_free_assets()  # Get the current list of free assets
-        if new_assets and new_assets != self.assets_list:  # Check if the list of assets has changed
-            self.assets_list = new_assets  # Update the stored list of assets
+        if new_assets and new_assets != self.servers_data[guild_id][
+            'assets_list']:  # Check if the list of assets has changed
+            self.servers_data[guild_id]['assets_list'] = new_assets  # Update the stored list of assets
             month_name = get_month_name()
             message = f"## {month_name} ассеты от эпиков\n"
             files = []
@@ -164,12 +160,13 @@ class EpicGamesBot(commands.Bot):
                 message += f"- [{asset['name']}](<{asset['link']}>)\n"  # Format the message
                 image_data = requests.get(asset['image']).content
                 files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
-            await self.current_channel.send(message, files=files)  # Send the message and files to the current channel
+            await self.servers_data[guild_id]['current_channel'].send(message,
+                                                                      files=files)  # Send the message and files to the current channel
 
 
 if __name__ == '__main__':
     TOKEN = "YOUR_TOKEN_HERE"  # Replace with your bot token
     COMMAND_PREFIX = '/assets '
 
-    bot = EpicGamesBot(command_prefix=COMMAND_PREFIX, token=TOKEN)
+    bot = EpicAssetsNotifyBot(command_prefix=COMMAND_PREFIX, token=TOKEN)
     bot.run_bot()

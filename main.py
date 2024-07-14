@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import asyncio
 from datetime import datetime, timedelta
 from io import BytesIO
+import json
+import os
 
 
 def get_month_name():
@@ -92,22 +94,38 @@ def is_dm(ctx: commands.Context):
     return ctx.guild is None
 
 
+def load_data(filename):
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            data = json.load(f)
+            print(f"Loaded {len(data)} objects from {filename}.")
+            return data
+
+    print(f"{filename} not found. Load failed.")
+
+    return []
+
+
 class EpicAssetsNotifyBot(commands.Bot):
     def __init__(self, command_prefix: str, token: str):
         intents = discord.Intents.default()
         intents.message_content = True  # Enable message content intents
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.token = token
-        self.subscribed_channels = []  # Store subscribed channels
-        self.assets_list = None  # Store the list of assets
+        self.add_commands()  # Register commands
+
+        self.subscribed_channels = load_data('subscribers_channels_backup.json')  # Load subscribed channels from backup
+        self.subscribed_users = load_data('subscribers_users_backup.json')  # Load subscribed users from backup
+        self.assets_list = load_data('assets_backup.json')  # Load assets list from backup
         self.next_check_time = None  # Store the next check time
         self.delete_after = 10  # Time after which the message will be deleted
-        self.add_commands()  # Register commands
+        self.backup_delay = 10  # Backup delay in seconds
 
     async def on_ready(self):
         # This function is called when the bot is ready
         print(f'Logged in as {self.user}')
         self.loop.create_task(self.set_daily_check())  # Start the daily check task
+        self.loop.create_task(self.backup_data())  # Start the backup task
 
     def run_bot(self):
         # This function runs the bot with the provided token
@@ -121,16 +139,19 @@ class EpicAssetsNotifyBot(commands.Bot):
                 await ctx.send("You do not have the necessary permissions to run this command.")
                 return
 
-            channel_id = ctx.channel.id
-            if channel_id in self.subscribed_channels:
-                await ctx.send("This channel is already subscribed.")
-                return
-
-            self.subscribed_channels.append(channel_id)
-
             if is_dm(ctx):
-                await ctx.send(f"Subscribed to asset updates")
+                user_id = ctx.author.id
+                if user_id in self.subscribed_users:
+                    await ctx.send("You are already subscribed.")
+                    return
+                self.subscribed_users.append(user_id)
+                await ctx.send("Subscribed to asset updates")
             else:
+                channel_id = ctx.channel.id
+                if channel_id in self.subscribed_channels:
+                    await ctx.send("This channel is already subscribed.")
+                    return
+                self.subscribed_channels.append(channel_id)
                 await ctx.send(f"Subscribed to asset updates in: {ctx.channel.name}")
 
         @self.command(name='unsub')
@@ -139,12 +160,20 @@ class EpicAssetsNotifyBot(commands.Bot):
                 await ctx.send("You do not have the necessary permissions to run this command.")
                 return
 
-            channel_id = ctx.channel.id
-            if channel_id in self.subscribed_channels:
-                self.subscribed_channels.remove(channel_id)
-                await ctx.send("Unsubscribed from asset updates.")
+            if is_dm(ctx):
+                user_id = ctx.author.id
+                if user_id in self.subscribed_users:
+                    self.subscribed_users.remove(user_id)
+                    await ctx.send("Unsubscribed from asset updates.")
+                else:
+                    await ctx.send("You are not subscribed.")
             else:
-                await ctx.send("This channel is not subscribed.")
+                channel_id = ctx.channel.id
+                if channel_id in self.subscribed_channels:
+                    self.subscribed_channels.remove(channel_id)
+                    await ctx.send("Unsubscribed from asset updates.")
+                else:
+                    await ctx.send("This channel is not subscribed.")
 
         @self.command(name='show')
         async def show_assets(ctx: commands.Context):
@@ -159,7 +188,8 @@ class EpicAssetsNotifyBot(commands.Bot):
 
                 await ctx.send(message, files=files)
             else:
-                message = f"No assets found or the list is empty.\n-# This message will be deleted after {self.delete_after} seconds "
+                message = f"No assets found or the list is empty.\n" \
+                          "-# This message will be deleted after {self.delete_after} seconds"
                 sent_message = await ctx.send(message)
                 await asyncio.sleep(self.delete_after)
                 await sent_message.delete()
@@ -211,6 +241,24 @@ class EpicAssetsNotifyBot(commands.Bot):
                 channel = self.get_channel(channel_id)
                 if channel:
                     await channel.send(message, files=files)  # Send the message and files to the subscribed channels
+
+            for user_id in self.subscribed_users:
+                user = await self.fetch_user(user_id)
+                if user:
+                    await user.send(message, files=files)  # Send the message and files to subscribed users
+
+    async def backup_data(self):
+        while True:
+            with open('subscribers_channels_backup.json', 'w') as f:
+                json.dump(self.subscribed_channels, f)
+                print(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
+            with open('subscribers_users_backup.json', 'w') as f:
+                json.dump(self.subscribed_users, f)
+                print(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
+            with open('assets_backup.json', 'w') as f:
+                json.dump(self.assets_list, f)
+                print(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
+            await asyncio.sleep(self.backup_delay)
 
 
 if __name__ == '__main__':

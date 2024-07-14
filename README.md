@@ -8,8 +8,8 @@ The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal 
 
 ## Features
 
-- **Automated Daily Checks**: The bot performs daily checks for new free assets and notifies a designated Discord channel if there are updates.
-- **Admin Commands**: Only users with administrator permissions can start or stop the asset tracking.
+- **Automated Daily Checks**: The bot performs daily checks for new free assets and notifies subscribed Discord channels and users if there are updates.
+- **Admin and DM Commands**: Users with administrator permissions can manage subscriptions, and individual users can subscribe/unsubscribe via direct messages.
 - **Time Left Notification**: Users can query the bot to find out how much time is left until the next asset check. The bot provides a formatted response and automatically deletes the message after a short period.
 - **Image Attachments**: When new assets are detected, the bot sends a detailed message with asset names, links, and attached images.
 
@@ -17,18 +17,20 @@ The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal 
 
 ### Admin Commands
 
-- `/assets start`: Starts the asset tracking. This command can only be run by administrators. If tracking is already active, the bot will inform the user to stop the current tracking first.
-- `/assets stop`: Stops the asset tracking and clears the list of tracked assets. This command can only be run by administrators.
+- `/assets sub`: Subscribes the current channel to asset updates. Can only be run by administrators.
+- `/assets unsub`: Unsubscribes the current channel from asset updates. Can only be run by administrators.
 
 ### General Commands
 
+- `/assets sub`: Subscribes the user to asset updates via direct message.
+- `/assets unsub`: Unsubscribes the user from asset updates via direct message.
 - `/assets time`: Displays the time remaining until the next check for new assets. This message is automatically deleted after 10 seconds.
 
 ## How It Works
 
 1. **Daily Checks**: The bot uses a background task to check for new assets every 24 hours. The time of the next check is stored and updated after each check.
 2. **Asset Retrieval**: The bot scrapes the Epic Games Store page for the latest free assets using BeautifulSoup and Requests libraries.
-3. **Notifications**: If new assets are found, the bot sends a message to the designated channel with the asset details and images.
+3. **Notifications**: If new assets are found, the bot sends a message to the designated channels and subscribed users with the asset details and images.
 
 ## Installation
 

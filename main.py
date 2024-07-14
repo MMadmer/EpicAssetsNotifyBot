@@ -49,21 +49,30 @@ class EpicGamesBot(commands.Bot):
     def add_commands(self):
         # This function registers commands
         @self.command(name='assets_start')
+        @commands.has_permissions(administrator=True)
         async def start(ctx):
             self.current_channel = ctx.channel  # Set the current channel for notifications
+            await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
             if self.check_task:
                 self.check_task.cancel()  # Cancel the previous timer if it was set
             self.check_task = self.loop.create_task(self.set_daily_check())  # Create a new daily check task
-            await ctx.send(f"Started watching for asset updates in: {ctx.channel.name}")
 
         @self.command(name='assets_stop')
+        @commands.has_permissions(administrator=True)
         async def stop(ctx):
             if self.check_task:
                 self.check_task.cancel()  # Cancel the current timer
                 self.check_task = None
-                await ctx.send("Stopped watching for asset updates.")
+                self.assets_list = None  # Clear the list of assets
+                await ctx.send("Stopped watching for asset updates and cleared the asset list.")
             else:
                 await ctx.send("No active watch task to stop.")
+
+        @start.error
+        @stop.error
+        async def on_command_error(ctx, error):
+            if isinstance(error, commands.MissingPermissions):
+                await ctx.send("You do not have the necessary permissions to run this command.")
 
     async def set_daily_check(self):
         # This function sets a daily check for asset updates

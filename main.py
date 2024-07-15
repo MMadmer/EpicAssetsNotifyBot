@@ -114,9 +114,13 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.token = token
         self.add_commands()  # Register commands
 
-        self.subscribed_channels = load_data('subscribers_channels_backup.json')  # Load subscribed channels from backup
-        self.subscribed_users = load_data('subscribers_users_backup.json')  # Load subscribed users from backup
-        self.assets_list = load_data('assets_backup.json')  # Load assets list from backup
+        self.data_folder = os.path.join(os.getcwd(), "data")  # Folder for storing backup data
+        self.subscribed_channels = load_data(
+            os.path.join(self.data_folder, 'subscribers_channels_backup.json'))  # Load subscribed channels from backup
+        self.subscribed_users = load_data(
+            os.path.join(self.data_folder, 'subscribers_users_backup.json'))  # Load subscribed users from backup
+        self.assets_list = load_data(
+            os.path.join(self.data_folder, 'assets_backup.json'))  # Load assets list from backup
         self.next_check_time = None  # Store the next check time
         self.delete_after = 10  # Time after which the message will be deleted
         self.backup_delay = 900  # Backup delay in seconds
@@ -264,20 +268,20 @@ class EpicAssetsNotifyBot(commands.Bot):
 
     async def backup_data(self):
         while True:
-            with open('subscribers_channels_backup.json', 'w') as f:
+            with open(os.path.join(self.data_folder, 'subscribers_channels_backup.json'), 'w') as f:
                 json.dump(self.subscribed_channels, f)
                 print(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
-            with open('subscribers_users_backup.json', 'w') as f:
+            with open(os.path.join(self.data_folder, 'subscribers_users_backup.json'), 'w') as f:
                 json.dump(self.subscribed_users, f)
                 print(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
-            with open('assets_backup.json', 'w') as f:
+            with open(os.path.join(self.data_folder, 'assets_backup.json'), 'w') as f:
                 json.dump(self.assets_list, f)
                 print(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
             await asyncio.sleep(self.backup_delay)
 
 
 if __name__ == '__main__':
-    TOKEN = "YOUR_TOKEN_HERE"  # Replace with your bot token
+    TOKEN = os.environ["ASSETS_BOT_TOKEN"]  # Replace with your bot token
     COMMAND_PREFIX = '/assets '
 
     bot = EpicAssetsNotifyBot(command_prefix=COMMAND_PREFIX, token=TOKEN)

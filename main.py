@@ -114,7 +114,7 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.token = token
         self.add_commands()  # Register commands
 
-        self.data_folder = os.path.join(os.getcwd(), "data")  # Folder for storing backup data
+        self.data_folder = self.data_folder = "/data/" if os.name != 'nt' else "data/"  # Folder for storing backup data
         self.subscribed_channels = load_data(
             os.path.join(self.data_folder, 'subscribers_channels_backup.json'))  # Load subscribed channels from backup
         self.subscribed_users = load_data(

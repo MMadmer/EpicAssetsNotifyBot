@@ -13,6 +13,7 @@ cloudscraper==1.2.71
 cmake_converter==2.2.0
 colorama==0.4.6
 cryptography==42.0.5
+discord==2.3.2
 fake-useragent==1.5.1
 frozenlist==1.4.1
 idna==3.6

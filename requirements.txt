@@ -6,6 +6,7 @@ async-timeout==4.0.3
 attrs==23.2.0
 backports-datetime-fromisoformat==2.0.1
 better-proxy==1.1.5
+bs4==0.0.2
 certifi==2024.2.2
 cffi==1.16.0
 charset-normalizer==3.3.2

@@ -1,4 +1,4 @@
-# Epic Games Free Assets Tracker Bot
+# Epic Games Monthly Free Assets Tracker Bot
 
 ![EpicAssetsNotifyBot](https://github.com/user-attachments/assets/c69a0594-4801-4b74-a2cc-bde7909922b1)
 

@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 from io import BytesIO
 import json
 import os
+from loguru import logger
+
+logger.add("bot_{time}.log", rotation="10 MB", level="INFO")
 
 
 def get_month_name():
@@ -17,10 +20,11 @@ def get_month_name():
         9: "Сентябрьские", 10: "Октябрьские", 11: "Ноябрьские", 12: "Декабрьские"
     }
     current_month = datetime.now().month
+
     return month_names[current_month]
 
 
-async def get_free_assets(retries=10):
+async def get_free_assets(retries=25):
     url = "https://www.unrealengine.com/marketplace/en-US/store"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -37,23 +41,22 @@ async def get_free_assets(retries=10):
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     content = await response.text()
-                    break  # Успешно получили контент, выходим из цикла
+                    break  # Success
                 elif response.status == 403:
                     wait_time = random.uniform(10, 15)
-                    print(f"Error 403: Forbidden. Retrying in {wait_time:.2f} seconds...")
+                    logger.warning(f"Error 403: Forbidden. Retrying in {wait_time:.2f} seconds...")
                     await asyncio.sleep(wait_time)
                 else:
-                    print(f"Error fetching the page: {response.status}")
+                    logger.error(f"Error fetching the page: {response.status}")
                     return None
     else:
-        # Если цикл завершился без успешного получения контента
-        print("Failed to fetch the page after several attempts.")
+        logger.error("Failed to fetch the page after several attempts.")
         return None
 
     soup = BeautifulSoup(content, 'html.parser')
     free_assets_section = soup.find('section', class_='assets-block marketplace-home-free')
     if not free_assets_section:
-        print("Could not find the 'Free For The Month' section.")
+        logger.warning("Could not find the 'Free For The Month' section.")
         return None
 
     asset_elements = free_assets_section.find_all('div', class_='asset-container')
@@ -70,7 +73,9 @@ async def get_free_assets(retries=10):
             assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})
 
     if not assets:
-        print("No assets found in the 'Free For The Month' section.")
+        logger.info("No assets found in the 'Free For The Month' section.")
+    else:
+        logger.info(f"Found {len(assets)} free assets.")
 
     return assets
 
@@ -87,9 +92,9 @@ def load_data(filename):
     if os.path.exists(filename):
         with open(filename, 'r') as f:
             data = json.load(f)
-            print(f"Loaded {len(data)} objects from {filename}.")
+            logger.info(f"Loaded {len(data)} objects from {filename}.")
             return data
-    print(f"{filename} not found. Load failed.")
+    logger.warning(f"{filename} not found. Load failed.")
     return []
 
 
@@ -112,11 +117,12 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.backup_delay = 900
 
     async def on_ready(self):
-        print(f'Logged in as {self.user}')
+        logger.info(f'Logged in as {self.user}')
         self.loop.create_task(self.set_daily_check())
         self.loop.create_task(self.backup_loop())
 
     def run_bot(self):
+        logger.info("Starting bot...")
         self.run(self.token)
 
     def add_commands(self):
@@ -133,6 +139,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                     return
                 self.subscribed_users.append({'id': user_id, 'shown_assets': False})
                 await ctx.send("Subscribed to asset updates")
+                logger.info(f"User {ctx.author} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_users[-1]['shown_assets']:
                     month_name = get_month_name()
@@ -155,6 +162,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                     return
                 self.subscribed_channels.append({'id': channel_id, 'shown_assets': False})
                 await ctx.send(f"Subscribed to asset updates in: {ctx.channel.name}")
+                logger.info(f"Channel {ctx.channel.name} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_channels[-1]['shown_assets']:
                     month_name = get_month_name()
@@ -182,6 +190,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                     if user['id'] == user_id:
                         self.subscribed_users.remove(user)
                         await ctx.send("Unsubscribed from asset updates.")
+                        logger.info(f"User {ctx.author} unsubscribed from asset updates.")
                         return
                 await ctx.send("You are not subscribed.")
             else:
@@ -190,6 +199,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                     if channel['id'] == channel_id:
                         self.subscribed_channels.remove(channel)
                         await ctx.send("Unsubscribed from asset updates.")
+                        logger.info(f"Channel {ctx.channel.name} unsubscribed from asset updates.")
                         return
                 await ctx.send("This channel is not subscribed.")
 
@@ -262,13 +272,13 @@ class EpicAssetsNotifyBot(commands.Bot):
     async def backup_data(self):
         with open(os.path.join(self.data_folder, 'subscribers_channels_backup.json'), 'w') as f:
             json.dump(self.subscribed_channels, f)
-            print(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
+            logger.info(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
         with open(os.path.join(self.data_folder, 'subscribers_users_backup.json'), 'w') as f:
             json.dump(self.subscribed_users, f)
-            print(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
+            logger.info(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
         with open(os.path.join(self.data_folder, 'assets_backup.json'), 'w') as f:
             json.dump(self.assets_list, f)
-            print(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
+            logger.info(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
 
 
 if __name__ == '__main__':

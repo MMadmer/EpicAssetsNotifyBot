@@ -1,3 +1,4 @@
+import random
 import aiohttp
 import discord
 from discord.ext import commands
@@ -19,20 +20,35 @@ def get_month_name():
     return month_names[current_month]
 
 
-async def get_free_assets():
+async def get_free_assets(retries=10):
     url = "https://www.unrealengine.com/marketplace/en-US/store"
     headers = {
-        "User-Agent": "Mozilla/5.0", "Accept-Language": "en-US,en;q=0.5",
-        "Referer": "https://www.unrealengine.com/", "Origin": "https://www.unrealengine.com",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/103.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Referer": "https://www.unrealengine.com/marketplace/en-US/store",
+        "Origin": "https://www.unrealengine.com",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive"
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status != 200:
-                print(f"Error fetching the page: {response.status}")
-                return None
-            content = await response.text()
+    for attempt in range(retries):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    break  # Успешно получили контент, выходим из цикла
+                elif response.status == 403:
+                    wait_time = random.uniform(10, 15)
+                    print(f"Error 403: Forbidden. Retrying in {wait_time:.2f} seconds...")
+                    await asyncio.sleep(wait_time)
+                else:
+                    print(f"Error fetching the page: {response.status}")
+                    return None
+    else:
+        # Если цикл завершился без успешного получения контента
+        print("Failed to fetch the page after several attempts.")
+        return None
 
     soup = BeautifulSoup(content, 'html.parser')
     free_assets_section = soup.find('section', class_='assets-block marketplace-home-free')
@@ -55,6 +71,7 @@ async def get_free_assets():
 
     if not assets:
         print("No assets found in the 'Free For The Month' section.")
+
     return assets
 
 
@@ -97,7 +114,7 @@ class EpicAssetsNotifyBot(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user}')
         self.loop.create_task(self.set_daily_check())
-        self.loop.create_task(self.backup_data())
+        self.loop.create_task(self.backup_loop())
 
     def run_bot(self):
         self.run(self.token)
@@ -235,18 +252,23 @@ class EpicAssetsNotifyBot(commands.Bot):
                     await user_obj.send(message, files=files)
                     user['shown_assets'] = True
 
-    async def backup_data(self):
+            await self.backup_data()
+
+    async def backup_loop(self):
         while True:
-            with open(os.path.join(self.data_folder, 'subscribers_channels_backup.json'), 'w') as f:
-                json.dump(self.subscribed_channels, f)
-                print(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
-            with open(os.path.join(self.data_folder, 'subscribers_users_backup.json'), 'w') as f:
-                json.dump(self.subscribed_users, f)
-                print(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
-            with open(os.path.join(self.data_folder, 'assets_backup.json'), 'w') as f:
-                json.dump(self.assets_list, f)
-                print(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
+            await self.backup_data()
             await asyncio.sleep(self.backup_delay)
+
+    async def backup_data(self):
+        with open(os.path.join(self.data_folder, 'subscribers_channels_backup.json'), 'w') as f:
+            json.dump(self.subscribed_channels, f)
+            print(f"Saved {len(self.subscribed_channels)} subscribed channels to backup.")
+        with open(os.path.join(self.data_folder, 'subscribers_users_backup.json'), 'w') as f:
+            json.dump(self.subscribed_users, f)
+            print(f"Saved {len(self.subscribed_users)} subscribed users to backup.")
+        with open(os.path.join(self.data_folder, 'assets_backup.json'), 'w') as f:
+            json.dump(self.assets_list, f)
+            print(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
 
 
 if __name__ == '__main__':

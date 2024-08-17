@@ -2,15 +2,27 @@ import random
 import aiohttp
 import discord
 from discord.ext import commands
+from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 import asyncio
 from datetime import datetime, timedelta
 from io import BytesIO
 import json
 import os
+import subprocess
+from pyvirtualdisplay import Display
 from loguru import logger
 
-logger.add("bot_{time}.log", rotation="10 MB", level="INFO")
+logger.add("bot.log", rotation="10 MB", level="INFO")
+
+
+def start_xvfb():
+    try:
+        logger.info("Starting Playwright with Xvfb...")
+        subprocess.run(["pkill", "Xvfb"], check=False)
+        subprocess.run(["xvfb-run", "python", "main.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error running Playwright with Xvfb: {e}")
 
 
 def get_month_name():
@@ -24,60 +36,66 @@ def get_month_name():
     return month_names[current_month]
 
 
-async def get_free_assets(retries=25):
+async def get_free_assets(retries=5):
     url = "https://www.unrealengine.com/marketplace/en-US/store"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/103.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Referer": "https://www.unrealengine.com/marketplace/en-US/store",
-        "Origin": "https://www.unrealengine.com",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Connection": "keep-alive"
-    }
+    display = Display(visible=False, size=(1920, 1080)) if not os.getenv("DISPLAY") else None
+
+    if display:
+        display.start()
 
     for attempt in range(retries):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                if response.status == 200:
-                    content = await response.text()
-                    break  # Success
-                elif response.status == 403:
-                    wait_time = random.uniform(10, 15)
-                    logger.warning(f"Error 403: Forbidden. Retrying in {wait_time:.2f} seconds...")
-                    await asyncio.sleep(wait_time)
-                else:
-                    logger.error(f"Error fetching the page: {response.status}")
+        try:
+            async with async_playwright() as p:
+                browser = await p.webkit.launch(headless=False)  # Headless bypass
+                page = await browser.new_page()
+
+                await page.goto(url)
+
+                await page.wait_for_selector('section.assets-block.marketplace-home-free')
+
+                # Get HTML
+                content = await page.content()
+
+                await browser.close()
+                if display:
+                    display.stop()
+
+                # Get assets
+                soup = BeautifulSoup(content, 'html.parser')
+                free_assets_section = soup.find('section', class_='assets-block marketplace-home-free')
+                if not free_assets_section:
+                    logger.warning("Could not find the 'Free For The Month' section.")
                     return None
-    else:
-        logger.error("Failed to fetch the page after several attempts.")
-        return None
 
-    soup = BeautifulSoup(content, 'html.parser')
-    free_assets_section = soup.find('section', class_='assets-block marketplace-home-free')
-    if not free_assets_section:
-        logger.warning("Could not find the 'Free For The Month' section.")
-        return None
+                asset_elements = free_assets_section.find_all('div', class_='asset-container')
 
-    asset_elements = free_assets_section.find_all('div', class_='asset-container')
+                assets = []
+                for element in asset_elements:
+                    name_element = element.find('h3')
+                    link_element = element.find('a', href=True)
+                    image_element = element.find('img')
+                    if name_element and link_element and image_element:
+                        asset_name = name_element.text.strip()
+                        asset_link = "https://www.unrealengine.com" + link_element['href']
+                        asset_image = image_element['src']
+                        assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})
 
-    assets = []
-    for element in asset_elements:
-        name_element = element.find('h3')
-        link_element = element.find('a', href=True)
-        image_element = element.find('img')
-        if name_element and link_element and image_element:
-            asset_name = name_element.text.strip()
-            asset_link = "https://www.unrealengine.com" + link_element['href']
-            asset_image = image_element['src']
-            assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})
+                if not assets:
+                    logger.info("No assets found in the 'Free For The Month' section.")
+                else:
+                    logger.info(f"Found {len(assets)} free assets.")
 
-    if not assets:
-        logger.info("No assets found in the 'Free For The Month' section.")
-    else:
-        logger.info(f"Found {len(assets)} free assets.")
+                return assets
 
-    return assets
+        except Exception as e:
+            logger.error(f"An error occurred: {str(e)}. Retrying...")
+            await asyncio.sleep(random.uniform(10, 15))
+
+    logger.error("Failed to fetch the page after several attempts.")
+    if display:
+        display.stop()
+
+    return None
 
 
 def is_admin(ctx: commands.Context):
@@ -122,6 +140,10 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.loop.create_task(self.backup_loop())
 
     def run_bot(self):
+        if not os.path.exists(self.data_folder):
+            logger.info(f"Creating data folder at {self.data_folder}")
+            os.makedirs(self.data_folder)
+
         logger.info("Starting bot...")
         self.run(self.token)
 

@@ -28,7 +28,7 @@ def get_month_name():
 
 async def get_free_assets(retries=5):
     url = "https://www.unrealengine.com/marketplace/en-US/store"
-    display = Display(visible=False, size=(1920, 1080)) if not os.getenv("DISPLAY") else None
+    display = Display() if not os.getenv("DISPLAY") else None
 
     if display:
         display.start()
@@ -36,12 +36,16 @@ async def get_free_assets(retries=5):
     for attempt in range(retries):
         try:
             async with async_playwright() as p:
-                browser = await p.webkit.launch(headless=False)  # Headless bypass
+                # Headless bypass
+                browser = await p.firefox.launch(headless=True)
+
                 page = await browser.new_page()
 
+                logger.info("Loading page...")
                 await page.goto(url)
 
-                await page.wait_for_selector('section.assets-block.marketplace-home-free')
+                await page.wait_for_selector('section.assets-block.marketplace-home-free', timeout=60000)
+                logger.info("Page loaded.")
 
                 # Get HTML
                 content = await page.content()

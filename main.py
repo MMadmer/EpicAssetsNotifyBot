@@ -9,20 +9,10 @@ from datetime import datetime, timedelta
 from io import BytesIO
 import json
 import os
-import subprocess
 from pyvirtualdisplay import Display
 from loguru import logger
 
 logger.add("bot.log", rotation="10 MB", level="INFO")
-
-
-def start_xvfb():
-    try:
-        logger.info("Starting Playwright with Xvfb...")
-        subprocess.run(["pkill", "Xvfb"], check=False)
-        subprocess.run(["xvfb-run", "python", "main.py"], check=True)
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Error running Playwright with Xvfb: {e}")
 
 
 def get_month_name():

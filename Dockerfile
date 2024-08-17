@@ -1,34 +1,29 @@
-# Используем базовый образ с Python 3.10
-FROM python:3.10-slim
+FROM python:3.10-slim as build-stage
 
-# Установим необходимые системные зависимости
+# Download system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
-    xauth \
     wget \
     gnupg \
     curl \
     ca-certificates \
-    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Обновим pip и установим Python-зависимости
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir \
+# Download bot Python dependencies
+RUN pip install --no-cache-dir \
     playwright \
     aiohttp \
     discord.py \
     beautifulsoup4 \
     loguru \
-    pyvirtualdisplay
+    pyvirtualdisplay \
+    && playwright install --with-deps --force webkit && \
+    rm -rf /usr/local/bin/chromium /usr/local/bin/firefox \
+    && apt-get purge -y --auto-remove \
+    && rm -rf /var/lib/apt/lists/* /root/.cache/pip
 
-# Установка зависимостей для Playwright и установка webkit-браузера
-RUN playwright install-deps \
-    && python -m playwright install webkit
-
-# Установка рабочей директории и копирование содержимого проекта в контейнер
 WORKDIR /app
-COPY . /app
+COPY main.py LICENSE README.md /app/
 
-# Запуск Python-скрипта
+# Run bot
 CMD ["python", "main.py"]

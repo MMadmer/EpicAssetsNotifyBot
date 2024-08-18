@@ -37,14 +37,17 @@ async def get_free_assets(retries=5):
         try:
             async with async_playwright() as p:
                 # Headless bypass
-                browser = await p.firefox.launch(headless=True)
+                browser = await p.firefox.launch(
+                    headless=False,
+                    args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
+                )
 
                 page = await browser.new_page()
 
                 logger.info("Loading page...")
                 await page.goto(url)
 
-                await page.wait_for_selector('section.assets-block.marketplace-home-free', timeout=60000)
+                await page.wait_for_selector('section.assets-block.marketplace-home-free')
                 logger.info("Page loaded.")
 
                 # Get HTML

@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip /tmp/* /var/tmp/* /usr/share/doc /usr/share/man /usr/share/locale /usr/share/info /usr/share/lintian /usr/share/linda /var/cache/debconf/*-old /etc/apt/sources.list.d/*
 
+ENV MOZ_REMOTE_SETTINGS_DEVTOOLS=1
+
 WORKDIR /app
 COPY main.py LICENSE README.md /app/
 

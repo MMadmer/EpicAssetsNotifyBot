@@ -130,6 +130,7 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.next_check_time = None
         self.delete_after = 10
         self.backup_delay = 900
+        self.message_delay = 0.5
 
     async def on_ready(self):
         logger.info(f'Logged in as {self.user}')
@@ -273,6 +274,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 if channel_obj:
                     await channel_obj.send(message, files=files)
                     channel['shown_assets'] = True
+                await asyncio.sleep(self.message_delay)
 
             for user in self.subscribed_users:
                 user_id = user['id']
@@ -280,6 +282,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 if user_obj:
                     await user_obj.send(message, files=files)
                     user['shown_assets'] = True
+                await asyncio.sleep(self.message_delay)
 
             await self.backup_data()
 

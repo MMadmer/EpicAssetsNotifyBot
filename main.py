@@ -27,7 +27,7 @@ def get_month_name():
 
 
 async def get_free_assets(retries=5):
-    url = "https://www.unrealengine.com/marketplace/en-US/store"
+    url = "https://www.fab.com/blade/7c8a9479-b008-4d52-8a15-a880a118327f?context=homepage"
     display = Display() if not os.getenv("DISPLAY") else None
 
     if display:
@@ -47,7 +47,7 @@ async def get_free_assets(retries=5):
                 logger.info("Loading page...")
                 await page.goto(url)
 
-                await page.wait_for_selector('section.assets-block.marketplace-home-free')
+                await page.wait_for_selector('div.fabkit-ResultGrid-root')
                 logger.info("Page loaded.")
 
                 # Get HTML
@@ -59,27 +59,24 @@ async def get_free_assets(retries=5):
 
                 # Get assets
                 soup = BeautifulSoup(content, 'html.parser')
-                free_assets_section = soup.find('section', class_='assets-block marketplace-home-free')
-                if not free_assets_section:
-                    logger.warning("Could not find the 'Free For The Month' section.")
-                    return None
-
-                asset_elements = free_assets_section.find_all('div', class_='asset-container')
+                asset_elements = soup.find_all('div', class_='fabkit-Stack-root')
 
                 assets = []
                 for element in asset_elements:
-                    name_element = element.find('h3')
+                    name_element = element.find('a', class_='fabkit-Typography-root')
                     link_element = element.find('a', href=True)
-                    image_element = element.find('img')
+                    image_element = element.find('img', alt="")
+
                     if name_element and link_element and image_element:
                         asset_name = name_element.text.strip()
-                        asset_link = "https://www.unrealengine.com" + link_element['href']
+                        asset_link = "https://www.fab.com" + link_element['href']
                         asset_image = image_element['src']
                         assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})
 
                 if not assets:
                     logger.info("No assets found in the 'Free For The Month' section.")
                 else:
+                    assets.pop(0)
                     logger.info(f"Found {len(assets)} free assets.")
 
                 return assets

@@ -9,8 +9,10 @@ from datetime import datetime, timedelta
 from io import BytesIO
 import json
 import os
+import re
 from pyvirtualdisplay import Display
 from loguru import logger
+from zoneinfo import ZoneInfo
 
 logger.add("bot.log", rotation="10 MB", level="INFO")
 
@@ -22,74 +24,231 @@ def get_month_name():
         9: "Сентябрьские", 10: "Октябрьские", 11: "Ноябрьские", 12: "Декабрьские"
     }
     current_month = datetime.now().month
-
     return month_names[current_month]
 
 
-async def get_free_assets(retries=5):
-    url = "https://www.fab.com/blade/7c8a9479-b008-4d52-8a15-a880a118327f?context=homepage"
+def _clean_text(s: str) -> str:
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+def _rus_month_genitive(month_num: int) -> str:
+    gen = {
+        1: "января", 2: "февраля", 3: "марта", 4: "апреля",
+        5: "мая", 6: "июня", 7: "июля", 8: "августа",
+        9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"
+    }
+    return gen.get(month_num, "")
+
+
+def _parse_deadline_suffix(heading_text: str) -> str | None:
+    """
+    Parse strings like:
+      "Limited-Time Free (Until Sept 9 at 9:59 AM ET)"
+      "Limited-Time Free (Until Sep 9, 2025 at 9:59 AM ET)"
+    Return: "до 9 сентября 9:59 GMT-4"
+    """
+    if not heading_text:
+        return None
+
+    # Extract "(Until ...)" part
+    m_paren = re.search(r"\(([^)]*Until[^)]*)\)", heading_text, flags=re.IGNORECASE)
+    if not m_paren:
+        return None
+    inside = m_paren.group(1)
+
+    # Capture parts: Month Day [Year] at HH:MM AM/PM TZ
+    # Support "Sep" or "Sept"
+    rx = re.compile(
+        r"Until\s+([A-Za-z]{3,9})\s+(\d{1,2})(?:,?\s*(\d{4}))?\s+at\s+(\d{1,2}):(\d{2})\s*(AM|PM)?\s*([A-Z]{2,4})",
+        re.IGNORECASE
+    )
+    m = rx.search(inside)
+    if not m:
+        return None
+
+    mon_name_en = m.group(1).lower()
+    day = int(m.group(2))
+    year = int(m.group(3)) if m.group(3) else datetime.now().year
+    hh12 = int(m.group(4))
+    mm = int(m.group(5))
+    ampm = (m.group(6) or "").upper()
+    tz_abbr = (m.group(7) or "").upper()
+
+    # Month map
+    mon_map = {
+        "jan": 1, "january": 1,
+        "feb": 2, "february": 2,
+        "mar": 3, "march": 3,
+        "apr": 4, "april": 4,
+        "may": 5,
+        "jun": 6, "june": 6,
+        "jul": 7, "july": 7,
+        "aug": 8, "august": 8,
+        "sep": 9, "sept": 9, "september": 9,
+        "oct": 10, "october": 10,
+        "nov": 11, "november": 11,
+        "dec": 12, "december": 12,
+    }
+    month = mon_map.get(mon_name_en)
+    if not month:
+        return None
+
+    # 12h → 24h
+    hour = hh12 % 12
+    if ampm == "PM":
+        hour += 12
+
+    # TZ map (Fab typically shows ET)
+    tz_map = {
+        "ET": "America/New_York",
+        "PT": "America/Los_Angeles",
+        "UTC": "UTC",
+        "GMT": "UTC"
+    }
+    tz_name = tz_map.get(tz_abbr, "UTC")
+    try:
+        tz = ZoneInfo(tz_name)
+    except Exception:
+        tz = ZoneInfo("UTC")
+
+    local_dt = datetime(year, month, day, hour, mm, tzinfo=tz)
+
+    # Compute GMT offset like "GMT-4" (if minutes non-zero, use ±H:MM)
+    offset = local_dt.utcoffset() or timedelta(0)
+    total_minutes = int(offset.total_seconds() // 60)
+    sign = "+" if total_minutes >= 0 else "-"
+    total_minutes = abs(total_minutes)
+    off_h, off_m = divmod(total_minutes, 60)
+    if off_m:
+        gmt_str = f"GMT{sign}{off_h}:{off_m:02d}"
+    else:
+        gmt_str = f"GMT{sign}{off_h}"
+
+    # Format: "до 9 сентября 9:59 GMT-4" (24h, no leading zero for hour)
+    rus_month = _rus_month_genitive(month)
+    hour_str = str(hour)  # no leading zero
+    time_str = f"{hour_str}:{mm:02d}"
+
+    return f"до {day} {rus_month} {time_str} {gmt_str}"
+
+
+async def get_free_assets(retries: int = 5):
+    """
+    Go to homepage, find 'Limited-Time Free' section, collect listing links,
+    then visit each listing and fetch final name/link/image.
+    Returns tuple: (assets: list[dict], deadline_suffix: str|None)
+    """
+    homepage_url = "https://www.fab.com/"
     display = Display() if not os.getenv("DISPLAY") else None
 
     if display:
         display.start()
 
-    for attempt in range(retries):
-        try:
-            async with async_playwright() as p:
-                # Headless bypass
-                browser = await p.firefox.launch(
-                    headless=False,
-                    args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
-                )
+    try:
+        for attempt in range(1, retries + 1):
+            try:
+                async with async_playwright() as p:
+                    browser = await p.firefox.launch(
+                        headless=False,
+                        args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
+                    )
+                    page = await browser.new_page()
 
-                page = await browser.new_page()
+                    logger.info("Loading homepage...")
+                    await page.goto(homepage_url, wait_until="domcontentloaded")
+                    await asyncio.sleep(1.0)
 
-                logger.info("Loading page...")
-                await page.goto(url)
+                    content = await page.content()
+                    soup = BeautifulSoup(content, "html.parser")
 
-                await page.wait_for_selector('div.fabkit-ResultGrid-root')
-                logger.info("Page loaded.")
+                    ltd_section = None
+                    ltd_heading_text = None
+                    for h2 in soup.find_all("h2"):
+                        heading_text = _clean_text(h2.get_text(" ", strip=True))
+                        if heading_text.startswith("Limited-Time Free"):
+                            ltd_section = h2.find_parent("section")
+                            ltd_heading_text = heading_text
+                            break
 
-                # Get HTML
-                content = await page.content()
+                    if not ltd_section:
+                        logger.warning("Limited-Time Free section not found on homepage. Attempt %d/%d", attempt,
+                                       retries)
+                        await browser.close()
+                        await asyncio.sleep(random.uniform(5, 9))
+                        continue
 
-                await browser.close()
-                if display:
-                    display.stop()
+                    deadline_suffix = _parse_deadline_suffix(ltd_heading_text) if ltd_heading_text else None
 
-                # Get assets
-                soup = BeautifulSoup(content, 'html.parser')
-                asset_elements = soup.find_all('div', class_='fabkit-Stack-root')
+                    items = []
+                    for li in ltd_section.find_all("li"):
+                        a = li.find("a", href=lambda h: h and h.startswith("/listings/"))
+                        if not a:
+                            continue
+                        link = "https://www.fab.com" + a["href"]
+                        prelim_name = _clean_text(a.get_text(" ", strip=True))
+                        img_tag = li.find("img")
+                        thumb = img_tag["src"] if (img_tag and img_tag.get("src")) else None
+                        items.append({"prelim_name": prelim_name, "link": link, "thumb": thumb})
 
-                assets = []
-                for element in asset_elements:
-                    name_element = element.find('a', class_='fabkit-Typography-root')
-                    link_element = element.find('a', href=True)
-                    image_element = element.find('img', alt="")
+                    if not items:
+                        logger.info("Limited-Time Free section is empty on homepage.")
+                        await browser.close()
+                        return [], deadline_suffix
 
-                    if name_element and link_element and image_element:
-                        asset_name = name_element.text.strip()
-                        asset_link = "https://www.fab.com" + link_element['href']
-                        asset_image = image_element['src']
-                        assets.append({'name': asset_name, 'link': asset_link, 'image': asset_image})
+                    logger.info(f"Collected {len(items)} listing links from homepage Limited-Time Free section.")
 
-                if not assets:
-                    logger.info("No assets found in the 'Free For The Month' section.")
-                else:
-                    assets.pop(0)
+                    assets = []
+                    for idx, item in enumerate(items, 1):
+                        try:
+                            await page.goto(item["link"], wait_until="domcontentloaded")
+                            await asyncio.sleep(0.5)
+
+                            html = await page.content()
+                            s2 = BeautifulSoup(html, "html.parser")
+
+                            og_title = s2.find("meta", attrs={"property": "og:title"})
+                            og_image = s2.find("meta", attrs={"property": "og:image"})
+
+                            name = _clean_text(
+                                (og_title.get("content") if og_title else None) or item["prelim_name"]
+                            )
+                            image_url = (og_image.get("content") if og_image else None) or item["thumb"]
+
+                            if image_url and image_url.startswith("//"):
+                                image_url = "https:" + image_url
+
+                            if not image_url:
+                                first_img = s2.find("img")
+                                if first_img and first_img.get("src"):
+                                    image_url = first_img["src"]
+
+                            if not name:
+                                h1 = s2.find("h1")
+                                if h1:
+                                    name = _clean_text(h1.get_text(" ", strip=True))
+                            if not name:
+                                name = item["prelim_name"] or "Untitled Listing"
+
+                            assets.append({"name": name, "link": item["link"], "image": image_url})
+                            logger.info(f"[{idx}/{len(items)}] Parsed: {name}")
+
+                        except Exception as e:
+                            logger.warning(f"Failed to parse listing {item['link']}: {e}")
+
+                    await browser.close()
                     logger.info(f"Found {len(assets)} free assets.")
+                    return assets, deadline_suffix
 
-                return assets
+            except Exception as e:
+                logger.error(f"Homepage parse error: {e}. Retrying {attempt}/{retries}...")
+                await asyncio.sleep(random.uniform(10, 15))
 
-        except Exception as e:
-            logger.error(f"An error occurred: {str(e)}. Retrying...")
-            await asyncio.sleep(random.uniform(10, 15))
+        logger.error("Failed to fetch Limited-Time Free assets after several attempts.")
+        return None, None
 
-    logger.error("Failed to fetch the page after several attempts.")
-    if display:
-        display.stop()
-
-    return None
+    finally:
+        if display:
+            display.stop()
 
 
 def is_admin(ctx: commands.Context):
@@ -104,7 +263,7 @@ def load_data(filename):
     if os.path.exists(filename):
         with open(filename, 'r') as f:
             data = json.load(f)
-            logger.info(f"Loaded {len(data)} objects from {filename}.")
+            logger.info(f"Loaded {len(data) if isinstance(data, list) else '1'} objects from {filename}.")
             return data
     logger.warning(f"{filename} not found. Load failed.")
     return []
@@ -118,12 +277,18 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.token = token
         self.add_commands()
         self.data_folder = "/data/" if os.name != 'nt' else "data/"
-        self.subscribed_channels = load_data(
-            os.path.join(self.data_folder, 'subscribers_channels_backup.json'))
-        self.subscribed_users = load_data(
-            os.path.join(self.data_folder, 'subscribers_users_backup.json'))
-        self.assets_list = load_data(
-            os.path.join(self.data_folder, 'assets_backup.json'))
+        self.subscribed_channels = load_data(os.path.join(self.data_folder, 'subscribers_channels_backup.json'))
+        self.subscribed_users = load_data(os.path.join(self.data_folder, 'subscribers_users_backup.json'))
+        self.assets_list = load_data(os.path.join(self.data_folder, 'assets_backup.json'))
+        # Deadline suffix (string)
+        self.deadline_suffix = ""
+        try:
+            if os.path.exists(os.path.join(self.data_folder, 'deadline_backup.json')):
+                with open(os.path.join(self.data_folder, 'deadline_backup.json'), 'r') as f:
+                    self.deadline_suffix = json.load(f) or ""
+        except Exception:
+            self.deadline_suffix = ""
+
         self.next_check_time = None
         self.delete_after = 10
         self.backup_delay = 900
@@ -142,6 +307,12 @@ class EpicAssetsNotifyBot(commands.Bot):
         logger.info("Starting bot...")
         self.run(self.token)
 
+    def _compose_header(self) -> str:
+        month_name = get_month_name()
+        if self.deadline_suffix:
+            return f"## {month_name} ассеты от эпиков ({self.deadline_suffix})\n"
+        return f"## {month_name} ассеты от эпиков\n"
+
     def add_commands(self):
         @self.command(name='sub')
         async def subscribe(ctx: commands.Context):
@@ -159,8 +330,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 logger.info(f"User {ctx.author} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_users[-1]['shown_assets']:
-                    month_name = get_month_name()
-                    message = f"## {month_name} ассеты от эпиков\n"
+                    message = self._compose_header()
                     files = []
                     for asset in self.assets_list:
                         message += f"- [{asset['name']}](<{asset['link']}>)\n"
@@ -182,8 +352,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 logger.info(f"Channel {ctx.channel.name} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_channels[-1]['shown_assets']:
-                    month_name = get_month_name()
-                    message = f"## {month_name} ассеты от эпиков\n"
+                    message = self._compose_header()
                     files = []
                     for asset in self.assets_list:
                         message += f"- [{asset['name']}](<{asset['link']}>)\n"
@@ -252,13 +421,14 @@ class EpicAssetsNotifyBot(commands.Bot):
             await asyncio.sleep(24 * 60 * 60)
 
     async def check_and_notify_assets(self):
-        new_assets = await get_free_assets()
-        if new_assets and new_assets != self.assets_list:
-            self.assets_list = new_assets
-            month_name = get_month_name()
-            message = f"## {month_name} ассеты от эпиков\n"
+        assets, deadline = await get_free_assets()
+        if assets and assets != self.assets_list:
+            self.assets_list = assets
+            self.deadline_suffix = deadline or ""
+
+            message = self._compose_header()
             files = []
-            for asset in new_assets:
+            for asset in assets:
                 message += f"- [{asset['name']}](<{asset['link']}>)\n"
                 async with aiohttp.ClientSession() as session:
                     async with session.get(asset['image']) as resp:
@@ -298,6 +468,9 @@ class EpicAssetsNotifyBot(commands.Bot):
         with open(os.path.join(self.data_folder, 'assets_backup.json'), 'w') as f:
             json.dump(self.assets_list, f)
             logger.info(f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.")
+        with open(os.path.join(self.data_folder, 'deadline_backup.json'), 'w') as f:
+            json.dump(self.deadline_suffix, f)
+            logger.info("Saved deadline suffix to backup.")
 
 
 if __name__ == '__main__':

@@ -45,7 +45,7 @@ def _parse_deadline_suffix(heading_text: str) -> str | None:
     Parse strings like:
       "Limited-Time Free (Until Sept 9 at 9:59 AM ET)"
       "Limited-Time Free (Until Sep 9, 2025 at 9:59 AM ET)"
-    Return: "до 9 сентября 9:59 GMT-4"
+    Return (ru): "до 9 сентября 9:59 GMT-4"
     """
     if not heading_text:
         return None
@@ -56,8 +56,7 @@ def _parse_deadline_suffix(heading_text: str) -> str | None:
         return None
     inside = m_paren.group(1)
 
-    # Capture parts: Month Day [Year] at HH:MM AM/PM TZ
-    # Support "Sep" or "Sept"
+    # Capture: Month Day [Year] at HH:MM AM/PM TZ
     rx = re.compile(
         r"Until\s+([A-Za-z]{3,9})\s+(\d{1,2})(?:,?\s*(\d{4}))?\s+at\s+(\d{1,2}):(\d{2})\s*(AM|PM)?\s*([A-Z]{2,4})",
         re.IGNORECASE
@@ -74,7 +73,6 @@ def _parse_deadline_suffix(heading_text: str) -> str | None:
     ampm = (m.group(6) or "").upper()
     tz_abbr = (m.group(7) or "").upper()
 
-    # Month map
     mon_map = {
         "jan": 1, "january": 1,
         "feb": 2, "february": 2,
@@ -113,30 +111,23 @@ def _parse_deadline_suffix(heading_text: str) -> str | None:
 
     local_dt = datetime(year, month, day, hour, mm, tzinfo=tz)
 
-    # Compute GMT offset like "GMT-4" (if minutes non-zero, use ±H:MM)
+    # "GMT±H[:MM]"
     offset = local_dt.utcoffset() or timedelta(0)
     total_minutes = int(offset.total_seconds() // 60)
     sign = "+" if total_minutes >= 0 else "-"
     total_minutes = abs(total_minutes)
     off_h, off_m = divmod(total_minutes, 60)
-    if off_m:
-        gmt_str = f"GMT{sign}{off_h}:{off_m:02d}"
-    else:
-        gmt_str = f"GMT{sign}{off_h}"
+    gmt_str = f"GMT{sign}{off_h}" if off_m == 0 else f"GMT{sign}{off_h}:{off_m:02d}"
 
-    # Format: "до 9 сентября 9:59 GMT-4" (24h, no leading zero for hour)
     rus_month = _rus_month_genitive(month)
-    hour_str = str(hour)  # no leading zero
-    time_str = f"{hour_str}:{mm:02d}"
-
-    return f"до {day} {rus_month} {time_str} {gmt_str}"
+    return f"до {day} {rus_month} {hour}:{mm:02d} {gmt_str}"
 
 
 async def get_free_assets(retries: int = 5):
     """
-    Go to homepage, find 'Limited-Time Free' section, collect listing links,
-    then visit each listing and fetch final name/link/image.
-    Returns tuple: (assets: list[dict], deadline_suffix: str|None)
+    Go to Fab homepage, find 'Limited-Time Free' section, collect listing cards directly
+    from the homepage (no per-listing navigation).
+    Returns: (assets: list[dict{name, link, image}], deadline_suffix: str|None)
     """
     homepage_url = "https://www.fab.com/"
     display = Display() if not os.getenv("DISPLAY") else None
@@ -149,13 +140,13 @@ async def get_free_assets(retries: int = 5):
             try:
                 async with async_playwright() as p:
                     browser = await p.firefox.launch(
-                        headless=False,
+                        headless=True,
                         args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
                     )
                     page = await browser.new_page()
 
                     logger.info("Loading homepage...")
-                    await page.goto(homepage_url, wait_until="domcontentloaded")
+                    await page.goto(homepage_url, wait_until="domcontentloaded", timeout=60000)
                     await asyncio.sleep(1.0)
 
                     content = await page.content()
@@ -171,73 +162,52 @@ async def get_free_assets(retries: int = 5):
                             break
 
                     if not ltd_section:
-                        logger.warning("Limited-Time Free section not found on homepage. Attempt %d/%d", attempt,
-                                       retries)
+                        logger.warning(f"'Limited-Time Free' section not found. Attempt {attempt}/{retries}")
                         await browser.close()
                         await asyncio.sleep(random.uniform(5, 9))
                         continue
 
                     deadline_suffix = _parse_deadline_suffix(ltd_heading_text) if ltd_heading_text else None
 
+                    # Collect items from the section without visiting each listing
                     items = []
+                    seen = set()
                     for li in ltd_section.find_all("li"):
                         a = li.find("a", href=lambda h: h and h.startswith("/listings/"))
                         if not a:
                             continue
                         link = "https://www.fab.com" + a["href"]
+                        if link in seen:
+                            continue
+                        seen.add(link)
+
+                        # Try several ways to get a readable name from the card
                         prelim_name = _clean_text(a.get_text(" ", strip=True))
+                        if not prelim_name:
+                            aria = a.get("aria-label")
+                            if aria:
+                                prelim_name = _clean_text(aria)
+
                         img_tag = li.find("img")
                         thumb = img_tag["src"] if (img_tag and img_tag.get("src")) else None
-                        items.append({"prelim_name": prelim_name, "link": link, "thumb": thumb})
+
+                        # Normalize image URL
+                        if thumb:
+                            if thumb.startswith("//"):
+                                thumb = "https:" + thumb
+                            elif thumb.startswith("/"):
+                                thumb = "https://www.fab.com" + thumb
+
+                        items.append({"name": prelim_name or "Untitled Listing", "link": link, "image": thumb})
+
+                    await browser.close()
 
                     if not items:
                         logger.info("Limited-Time Free section is empty on homepage.")
-                        await browser.close()
                         return [], deadline_suffix
 
-                    logger.info(f"Collected {len(items)} listing links from homepage Limited-Time Free section.")
-
-                    assets = []
-                    for idx, item in enumerate(items, 1):
-                        try:
-                            await page.goto(item["link"], wait_until="domcontentloaded")
-                            await asyncio.sleep(0.5)
-
-                            html = await page.content()
-                            s2 = BeautifulSoup(html, "html.parser")
-
-                            og_title = s2.find("meta", attrs={"property": "og:title"})
-                            og_image = s2.find("meta", attrs={"property": "og:image"})
-
-                            name = _clean_text(
-                                (og_title.get("content") if og_title else None) or item["prelim_name"]
-                            )
-                            image_url = (og_image.get("content") if og_image else None) or item["thumb"]
-
-                            if image_url and image_url.startswith("//"):
-                                image_url = "https:" + image_url
-
-                            if not image_url:
-                                first_img = s2.find("img")
-                                if first_img and first_img.get("src"):
-                                    image_url = first_img["src"]
-
-                            if not name:
-                                h1 = s2.find("h1")
-                                if h1:
-                                    name = _clean_text(h1.get_text(" ", strip=True))
-                            if not name:
-                                name = item["prelim_name"] or "Untitled Listing"
-
-                            assets.append({"name": name, "link": item["link"], "image": image_url})
-                            logger.info(f"[{idx}/{len(items)}] Parsed: {name}")
-
-                        except Exception as e:
-                            logger.warning(f"Failed to parse listing {item['link']}: {e}")
-
-                    await browser.close()
-                    logger.info(f"Found {len(assets)} free assets.")
-                    return assets, deadline_suffix
+                    logger.info(f"Collected {len(items)} listing cards from homepage.")
+                    return items, deadline_suffix
 
             except Exception as e:
                 logger.error(f"Homepage parse error: {e}. Retrying {attempt}/{retries}...")
@@ -280,7 +250,6 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.subscribed_channels = load_data(os.path.join(self.data_folder, 'subscribers_channels_backup.json'))
         self.subscribed_users = load_data(os.path.join(self.data_folder, 'subscribers_users_backup.json'))
         self.assets_list = load_data(os.path.join(self.data_folder, 'assets_backup.json'))
-        # Deadline suffix (string)
         self.deadline_suffix = ""
         try:
             if os.path.exists(os.path.join(self.data_folder, 'deadline_backup.json')):
@@ -313,6 +282,26 @@ class EpicAssetsNotifyBot(commands.Bot):
             return f"## {month_name} ассеты от эпиков ({self.deadline_suffix})\n"
         return f"## {month_name} ассеты от эпиков\n"
 
+    async def _build_message_and_files(self, assets):
+        """Builds markdown message and downloads images using one ClientSession."""
+        message = self._compose_header()
+        files = []
+        async with aiohttp.ClientSession() as session:
+            for asset in assets:
+                message += f"- [{asset['name']}](<{asset['link']}>)\n"
+                img_url = asset.get('image')
+                if not img_url:
+                    continue
+                try:
+                    async with session.get(img_url, timeout=30) as resp:
+                        image_data = await resp.read()
+                    # Sanitize filename a bit
+                    safe_name = re.sub(r'[\\/*?:"<>|]+', "_", asset['name'])[:100] or "image"
+                    files.append(discord.File(BytesIO(image_data), filename=f"{safe_name}.png"))
+                except Exception as e:
+                    logger.warning(f"Image fetch failed for {asset['link']}: {e}")
+        return message, files
+
     def add_commands(self):
         @self.command(name='sub')
         async def subscribe(ctx: commands.Context):
@@ -330,14 +319,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 logger.info(f"User {ctx.author} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_users[-1]['shown_assets']:
-                    message = self._compose_header()
-                    files = []
-                    for asset in self.assets_list:
-                        message += f"- [{asset['name']}](<{asset['link']}>)\n"
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get(asset['image']) as resp:
-                                image_data = await resp.read()
-                        files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+                    message, files = await self._build_message_and_files(self.assets_list)
                     user = await self.fetch_user(user_id)
                     await user.send(message, files=files)
                     self.subscribed_users[-1]['shown_assets'] = True
@@ -352,14 +334,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 logger.info(f"Channel {ctx.channel.name} subscribed to asset updates.")
 
                 if self.assets_list and not self.subscribed_channels[-1]['shown_assets']:
-                    message = self._compose_header()
-                    files = []
-                    for asset in self.assets_list:
-                        message += f"- [{asset['name']}](<{asset['link']}>)\n"
-                        async with aiohttp.ClientSession() as session:
-                            async with session.get(asset['image']) as resp:
-                                image_data = await resp.read()
-                        files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+                    message, files = await self._build_message_and_files(self.assets_list)
                     channel = self.get_channel(channel_id)
                     await channel.send(message, files=files)
                     self.subscribed_channels[-1]['shown_assets'] = True
@@ -422,36 +397,52 @@ class EpicAssetsNotifyBot(commands.Bot):
 
     async def check_and_notify_assets(self):
         assets, deadline = await get_free_assets()
-        if assets and assets != self.assets_list:
-            self.assets_list = assets
-            self.deadline_suffix = deadline or ""
+        if not assets:
+            return
 
-            message = self._compose_header()
-            files = []
-            for asset in assets:
-                message += f"- [{asset['name']}](<{asset['link']}>)\n"
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(asset['image']) as resp:
-                        image_data = await resp.read()
-                files.append(discord.File(BytesIO(image_data), filename=f"{asset['name']}.png"))
+        def ids(lst):
+            return {a['link'] for a in (lst or [])}
 
-            for channel in self.subscribed_channels:
-                channel_id = channel['id']
-                channel_obj = self.get_channel(channel_id)
-                if channel_obj:
-                    await channel_obj.send(message, files=files)
-                    channel['shown_assets'] = True
-                await asyncio.sleep(self.message_delay)
+        new_ids = ids(assets)
+        old_ids = ids(self.assets_list)
+        deadline = deadline or ""
+        deadline_changed = (deadline != (self.deadline_suffix or ""))
 
-            for user in self.subscribed_users:
-                user_id = user['id']
-                user_obj = await self.fetch_user(user_id)
-                if user_obj:
+        added = new_ids - old_ids
+
+        # Ignore shrink-only change (when the new set is a strict subset and no new links appeared)
+        if not deadline_changed and not added and new_ids.issubset(old_ids) and new_ids != old_ids:
+            logger.warning("Shrink-only change detected — likely transient scrape issue. Skipping update.")
+            return
+
+        # If nothing changed and no new deadline — do nothing
+        if not deadline_changed and new_ids == old_ids:
+            return
+
+        # Update state & notify
+        self.assets_list = assets
+        self.deadline_suffix = deadline
+
+        message, files = await self._build_message_and_files(assets)
+
+        for channel in self.subscribed_channels:
+            channel_obj = self.get_channel(channel['id'])
+            if channel_obj:
+                await channel_obj.send(message, files=files)
+                channel['shown_assets'] = True
+            await asyncio.sleep(self.message_delay)
+
+        for user in self.subscribed_users:
+            user_obj = await self.fetch_user(user['id'])
+            if user_obj:
+                try:
                     await user_obj.send(message, files=files)
                     user['shown_assets'] = True
-                await asyncio.sleep(self.message_delay)
+                except Exception as e:
+                    logger.warning(f"DM failed for {user['id']}: {e}")
+            await asyncio.sleep(self.message_delay)
 
-            await self.backup_data()
+        await self.backup_data()
 
     async def backup_loop(self):
         while True:

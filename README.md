@@ -1,6 +1,6 @@
 # Epic Games Monthly Free Assets Tracker Bot
 
-![EpicAssetsNotifyBot](https://github.com/user-attachments/assets/c69a0594-4801-4b74-a2cc-bde7909922b1)
+<img width="1024" height="1024" alt="epic_assets_avatar" src="https://github.com/user-attachments/assets/3ba5ab1d-9fba-41a0-bae3-2a557eeefb91" />
 
 ## Overview
 

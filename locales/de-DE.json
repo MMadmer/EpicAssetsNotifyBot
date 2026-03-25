@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "de-DE",
+    "name": "Deutsch"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "Januar",
+          "2": "Februar",
+          "3": "März",
+          "4": "April",
+          "5": "Mai",
+          "6": "Juni",
+          "7": "Juli",
+          "8": "August",
+          "9": "September",
+          "10": "Oktober",
+          "11": "November",
+          "12": "Dezember"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "Januar",
+          "2": "Februar",
+          "3": "März",
+          "4": "April",
+          "5": "Mai",
+          "6": "Juni",
+          "7": "Juli",
+          "8": "August",
+          "9": "September",
+          "10": "Oktober",
+          "11": "November",
+          "12": "Dezember"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "bis {day}. {month_name}, {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Epic-Assets für {month_name} ({deadline_suffix})\n",
+    "without_deadline": "## Epic-Assets für {month_name}\n"
+  },
+  "assets": {
+    "untitled": "Ohne Titel"
+  },
+  "errors": {
+    "permission_denied": "Du hast nicht die nötigen Berechtigungen, um diesen Befehl auszuführen."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Du bist bereits abonniert.",
+      "success": "Abo für Asset-Updates aktiviert."
+    },
+    "channel": {
+      "already": "Dieser Kanal ist bereits abonniert.",
+      "success": "Dieser Kanal wurde für Asset-Updates abonniert: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Abo für Asset-Updates deaktiviert.",
+    "dm": {
+      "not_subscribed": "Du hast kein aktives Abo."
+    },
+    "channel": {
+      "not_subscribed": "Dieser Kanal ist nicht abonniert."
+    }
+  },
+  "time": {
+    "remaining": "Verbleibende Zeit bis zur nächsten Prüfung: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Es ist noch keine nächste Prüfung geplant.",
+    "delete_hint": "-# Diese Nachricht wird nach {delete_after} Sekunden gelöscht"
+  },
+  "locale": {
+    "dm": {
+      "changed": "Die Bot-Sprache in deinen Direktnachrichten ist jetzt {locale_name} ({locale_code}).",
+      "already": "Die Bot-Sprache in deinen Direktnachrichten ist bereits {locale_name} ({locale_code}).",
+      "current": "Aktuelle Sprache in Direktnachrichten: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "Die Bot-Sprache in diesem Kanal ist jetzt {locale_name} ({locale_code}).",
+      "already": "Die Bot-Sprache in diesem Kanal ist bereits {locale_name} ({locale_code}).",
+      "current": "Aktuelle Sprache dieses Kanals: {locale_name} ({locale_code}).",
+      "subscription_required": "Abonniere zuerst diesen Kanal für Updates und ändere dann seine Sprache."
+    },
+    "invalid": "Unbekannte Sprache: {input_value}.",
+    "available": "Verfügbare Sprachen: {locales}.",
+    "usage": "Verwende `{command}`."
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "pl-PL",
+    "name": "Polski"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "styczeń",
+          "2": "luty",
+          "3": "marzec",
+          "4": "kwiecień",
+          "5": "maj",
+          "6": "czerwiec",
+          "7": "lipiec",
+          "8": "sierpień",
+          "9": "wrzesień",
+          "10": "październik",
+          "11": "listopad",
+          "12": "grudzień"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "stycznia",
+          "2": "lutego",
+          "3": "marca",
+          "4": "kwietnia",
+          "5": "maja",
+          "6": "czerwca",
+          "7": "lipca",
+          "8": "sierpnia",
+          "9": "września",
+          "10": "października",
+          "11": "listopada",
+          "12": "grudnia"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "do {day} {month_name}, {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Zasoby Epic na {month_name} ({deadline_suffix})\n",
+    "without_deadline": "## Zasoby Epic na {month_name}\n"
+  },
+  "assets": {
+    "untitled": "Bez nazwy"
+  },
+  "errors": {
+    "permission_denied": "Nie masz uprawnień do wykonania tej komendy."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Już subskrybujesz powiadomienia.",
+      "success": "Włączono subskrypcję aktualizacji zasobów."
+    },
+    "channel": {
+      "already": "Ten kanał już subskrybuje powiadomienia.",
+      "success": "Włączono subskrypcję aktualizacji zasobów dla kanału: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Wyłączono subskrypcję aktualizacji zasobów.",
+    "dm": {
+      "not_subscribed": "Nie masz aktywnej subskrypcji."
+    },
+    "channel": {
+      "not_subscribed": "Ten kanał nie subskrybuje powiadomień."
+    }
+  },
+  "time": {
+    "remaining": "Czas do następnego sprawdzenia: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Następne sprawdzenie nie zostało jeszcze zaplanowane.",
+    "delete_hint": "-# Ta wiadomość zostanie usunięta za {delete_after} sekund"
+  },
+  "locale": {
+    "dm": {
+      "changed": "Język bota w wiadomościach prywatnych zmieniono na {locale_name} ({locale_code}).",
+      "already": "Język bota w wiadomościach prywatnych jest już ustawiony na {locale_name} ({locale_code}).",
+      "current": "Aktualny język w wiadomościach prywatnych: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "Język bota na tym kanale zmieniono na {locale_name} ({locale_code}).",
+      "already": "Język bota na tym kanale jest już ustawiony na {locale_name} ({locale_code}).",
+      "current": "Aktualny język bota na tym kanale: {locale_name} ({locale_code}).",
+      "subscription_required": "Najpierw zasubskrybuj ten kanał do aktualizacji, a dopiero potem zmień jego język."
+    },
+    "invalid": "Nieznany język: {input_value}.",
+    "available": "Dostępne języki: {locales}.",
+    "usage": "Użyj `{command}`."
+  }
+}

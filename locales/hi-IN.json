@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "hi-IN",
+    "name": "हिन्दी"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "जनवरी",
+          "2": "फ़रवरी",
+          "3": "मार्च",
+          "4": "अप्रैल",
+          "5": "मई",
+          "6": "जून",
+          "7": "जुलाई",
+          "8": "अगस्त",
+          "9": "सितंबर",
+          "10": "अक्टूबर",
+          "11": "नवंबर",
+          "12": "दिसंबर"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "जनवरी",
+          "2": "फ़रवरी",
+          "3": "मार्च",
+          "4": "अप्रैल",
+          "5": "मई",
+          "6": "जून",
+          "7": "जुलाई",
+          "8": "अगस्त",
+          "9": "सितंबर",
+          "10": "अक्टूबर",
+          "11": "नवंबर",
+          "12": "दिसंबर"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} तक"
+  },
+  "header": {
+    "with_deadline": "## {month_name} के Epic एसेट्स ({deadline_suffix})\n",
+    "without_deadline": "## {month_name} के Epic एसेट्स\n"
+  },
+  "assets": {
+    "untitled": "बिना नाम"
+  },
+  "errors": {
+    "permission_denied": "आपको यह कमांड चलाने की अनुमति नहीं है।"
+  },
+  "subscribe": {
+    "dm": {
+      "already": "आप पहले से सदस्य हैं।",
+      "success": "एसेट अपडेट की सदस्यता चालू कर दी गई है।"
+    },
+    "channel": {
+      "already": "यह चैनल पहले से सदस्य है।",
+      "success": "इस चैनल के लिए एसेट अपडेट सदस्यता चालू की गई: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "एसेट अपडेट की सदस्यता बंद कर दी गई है।",
+    "dm": {
+      "not_subscribed": "आपकी कोई सक्रिय सदस्यता नहीं है।"
+    },
+    "channel": {
+      "not_subscribed": "यह चैनल सदस्य नहीं है।"
+    }
+  },
+  "time": {
+    "remaining": "अगली जांच तक समय: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "अगली जांच अभी निर्धारित नहीं है।",
+    "delete_hint": "-# यह संदेश {delete_after} सेकंड में हटा दिया जाएगा"
+  },
+  "locale": {
+    "dm": {
+      "changed": "आपके DM में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
+      "already": "आपके DM में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
+      "current": "DM में वर्तमान भाषा: {locale_name} ({locale_code})।"
+    },
+    "channel": {
+      "changed": "इस चैनल में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
+      "already": "इस चैनल में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
+      "current": "इस चैनल की वर्तमान भाषा: {locale_name} ({locale_code})।",
+      "subscription_required": "पहले इस चैनल को अपडेट के लिए सदस्य बनाइए, फिर उसकी भाषा बदलिए।"
+    },
+    "invalid": "अज्ञात भाषा: {input_value}।",
+    "available": "उपलब्ध भाषाएँ: {locales}।",
+    "usage": "`{command}` का उपयोग करें।"
+  }
+}

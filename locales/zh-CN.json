@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "zh-CN",
+    "name": "简体中文"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "1月",
+          "2": "2月",
+          "3": "3月",
+          "4": "4月",
+          "5": "5月",
+          "6": "6月",
+          "7": "7月",
+          "8": "8月",
+          "9": "9月",
+          "10": "10月",
+          "11": "11月",
+          "12": "12月"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "1月",
+          "2": "2月",
+          "3": "3月",
+          "4": "4月",
+          "5": "5月",
+          "6": "6月",
+          "7": "7月",
+          "8": "8月",
+          "9": "9月",
+          "10": "10月",
+          "11": "11月",
+          "12": "12月"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "截止 {month_name}{day}日 {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Epic 的 {month_name}资产（{deadline_suffix}）\n",
+    "without_deadline": "## Epic 的 {month_name}资产\n"
+  },
+  "assets": {
+    "untitled": "未命名"
+  },
+  "errors": {
+    "permission_denied": "您没有执行此命令所需的权限。"
+  },
+  "subscribe": {
+    "dm": {
+      "already": "您已订阅。",
+      "success": "已订阅资产更新。"
+    },
+    "channel": {
+      "already": "此频道已订阅。",
+      "success": "已为此频道订阅资产更新：{channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "已取消订阅资产更新。",
+    "dm": {
+      "not_subscribed": "您尚未订阅。"
+    },
+    "channel": {
+      "not_subscribed": "此频道尚未订阅。"
+    }
+  },
+  "time": {
+    "remaining": "距离下次检查还有：{hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "尚未安排下一次检查。",
+    "delete_hint": "-# 此消息将在 {delete_after} 秒后删除"
+  },
+  "locale": {
+    "dm": {
+      "changed": "私信中的机器人语言已切换为 {locale_name} ({locale_code})。",
+      "already": "私信中的机器人语言已是 {locale_name} ({locale_code})。",
+      "current": "当前私信语言：{locale_name} ({locale_code})。"
+    },
+    "channel": {
+      "changed": "此频道中的机器人语言已切换为 {locale_name} ({locale_code})。",
+      "already": "此频道中的机器人语言已是 {locale_name} ({locale_code})。",
+      "current": "当前频道语言：{locale_name} ({locale_code})。",
+      "subscription_required": "请先为此频道订阅更新，然后再修改频道语言。"
+    },
+    "invalid": "未知语言：{input_value}。",
+    "available": "可用语言：{locales}。",
+    "usage": "请使用 `{command}`。"
+  }
+}

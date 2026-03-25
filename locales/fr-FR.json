@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "fr-FR",
+    "name": "Français"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "janvier",
+          "2": "février",
+          "3": "mars",
+          "4": "avril",
+          "5": "mai",
+          "6": "juin",
+          "7": "juillet",
+          "8": "août",
+          "9": "septembre",
+          "10": "octobre",
+          "11": "novembre",
+          "12": "décembre"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "janvier",
+          "2": "février",
+          "3": "mars",
+          "4": "avril",
+          "5": "mai",
+          "6": "juin",
+          "7": "juillet",
+          "8": "août",
+          "9": "septembre",
+          "10": "octobre",
+          "11": "novembre",
+          "12": "décembre"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "jusqu’au {day} {month_name} à {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Ressources Epic de {month_name} ({deadline_suffix})\n",
+    "without_deadline": "## Ressources Epic de {month_name}\n"
+  },
+  "assets": {
+    "untitled": "Sans titre"
+  },
+  "errors": {
+    "permission_denied": "Vous n’avez pas les autorisations nécessaires pour exécuter cette commande."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Vous êtes déjà abonné.",
+      "success": "Abonnement aux mises à jour des ressources activé."
+    },
+    "channel": {
+      "already": "Ce canal est déjà abonné.",
+      "success": "Abonnement de ce canal aux mises à jour des ressources activé : {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Abonnement aux mises à jour des ressources désactivé.",
+    "dm": {
+      "not_subscribed": "Vous n’avez pas d’abonnement actif."
+    },
+    "channel": {
+      "not_subscribed": "Ce canal n’est pas abonné."
+    }
+  },
+  "time": {
+    "remaining": "Temps restant avant la prochaine vérification : {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Aucune prochaine vérification n’est encore planifiée.",
+    "delete_hint": "-# Ce message sera supprimé dans {delete_after} secondes"
+  },
+  "locale": {
+    "dm": {
+      "changed": "La langue du bot dans vos messages privés est maintenant {locale_name} ({locale_code}).",
+      "already": "La langue du bot dans vos messages privés est déjà {locale_name} ({locale_code}).",
+      "current": "Langue actuelle des messages privés : {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "La langue du bot dans ce canal est maintenant {locale_name} ({locale_code}).",
+      "already": "La langue du bot dans ce canal est déjà {locale_name} ({locale_code}).",
+      "current": "Langue actuelle de ce canal : {locale_name} ({locale_code}).",
+      "subscription_required": "Abonnez d’abord ce canal aux mises à jour, puis changez sa langue."
+    },
+    "invalid": "Langue inconnue : {input_value}.",
+    "available": "Langues disponibles : {locales}.",
+    "usage": "Utilisez `{command}`."
+  }
+}

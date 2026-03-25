@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "es-ES",
+    "name": "Español"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "enero",
+          "2": "febrero",
+          "3": "marzo",
+          "4": "abril",
+          "5": "mayo",
+          "6": "junio",
+          "7": "julio",
+          "8": "agosto",
+          "9": "septiembre",
+          "10": "octubre",
+          "11": "noviembre",
+          "12": "diciembre"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "enero",
+          "2": "febrero",
+          "3": "marzo",
+          "4": "abril",
+          "5": "mayo",
+          "6": "junio",
+          "7": "julio",
+          "8": "agosto",
+          "9": "septiembre",
+          "10": "octubre",
+          "11": "noviembre",
+          "12": "diciembre"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "hasta el {day} de {month_name} a las {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Recursos de Epic de {month_name} ({deadline_suffix})\n",
+    "without_deadline": "## Recursos de Epic de {month_name}\n"
+  },
+  "assets": {
+    "untitled": "Sin título"
+  },
+  "errors": {
+    "permission_denied": "No tienes permisos para ejecutar este comando."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Ya estás suscrito.",
+      "success": "Suscripción a las actualizaciones de recursos activada."
+    },
+    "channel": {
+      "already": "Este canal ya está suscrito.",
+      "success": "Este canal quedó suscrito a las actualizaciones de recursos: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Suscripción a las actualizaciones de recursos cancelada.",
+    "dm": {
+      "not_subscribed": "No tienes una suscripción activa."
+    },
+    "channel": {
+      "not_subscribed": "Este canal no está suscrito."
+    }
+  },
+  "time": {
+    "remaining": "Tiempo restante hasta la próxima revisión: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Aún no hay una próxima revisión programada.",
+    "delete_hint": "-# Este mensaje se eliminará dentro de {delete_after} segundos"
+  },
+  "locale": {
+    "dm": {
+      "changed": "El idioma del bot en tus mensajes directos ahora es {locale_name} ({locale_code}).",
+      "already": "El idioma del bot en tus mensajes directos ya es {locale_name} ({locale_code}).",
+      "current": "Idioma actual en mensajes directos: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "El idioma del bot en este canal ahora es {locale_name} ({locale_code}).",
+      "already": "El idioma del bot en este canal ya es {locale_name} ({locale_code}).",
+      "current": "Idioma actual de este canal: {locale_name} ({locale_code}).",
+      "subscription_required": "Primero suscribe este canal a las actualizaciones y luego cambia su idioma."
+    },
+    "invalid": "Idioma desconocido: {input_value}.",
+    "available": "Idiomas disponibles: {locales}.",
+    "usage": "Usa `{command}`."
+  }
+}

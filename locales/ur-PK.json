@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "ur-PK",
+    "name": "اردو"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "جنوری",
+          "2": "فروری",
+          "3": "مارچ",
+          "4": "اپریل",
+          "5": "مئی",
+          "6": "جون",
+          "7": "جولائی",
+          "8": "اگست",
+          "9": "ستمبر",
+          "10": "اکتوبر",
+          "11": "نومبر",
+          "12": "دسمبر"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "جنوری",
+          "2": "فروری",
+          "3": "مارچ",
+          "4": "اپریل",
+          "5": "مئی",
+          "6": "جون",
+          "7": "جولائی",
+          "8": "اگست",
+          "9": "ستمبر",
+          "10": "اکتوبر",
+          "11": "نومبر",
+          "12": "دسمبر"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} تک"
+  },
+  "header": {
+    "with_deadline": "## {month_name} کے Epic اثاثے ({deadline_suffix})\n",
+    "without_deadline": "## {month_name} کے Epic اثاثے\n"
+  },
+  "assets": {
+    "untitled": "بلا عنوان"
+  },
+  "errors": {
+    "permission_denied": "آپ کے پاس یہ کمانڈ چلانے کی اجازت نہیں ہے۔"
+  },
+  "subscribe": {
+    "dm": {
+      "already": "آپ پہلے ہی سبسکرائب ہیں۔",
+      "success": "اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے۔"
+    },
+    "channel": {
+      "already": "یہ چینل پہلے ہی سبسکرائب ہے۔",
+      "success": "اس چینل کے لیے اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "اثاثوں کی تازہ کاریوں کی رکنیت منسوخ کر دی گئی ہے۔",
+    "dm": {
+      "not_subscribed": "آپ کی کوئی فعال رکنیت نہیں ہے۔"
+    },
+    "channel": {
+      "not_subscribed": "یہ چینل سبسکرائب نہیں ہے۔"
+    }
+  },
+  "time": {
+    "remaining": "اگلی جانچ تک باقی وقت: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "اگلی جانچ ابھی طے نہیں کی گئی۔",
+    "delete_hint": "-# یہ پیغام {delete_after} سیکنڈ بعد حذف کر دیا جائے گا"
+  },
+  "locale": {
+    "dm": {
+      "changed": "آپ کے نجی پیغامات میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
+      "already": "آپ کے نجی پیغامات میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
+      "current": "نجی پیغامات کی موجودہ زبان: {locale_name} ({locale_code})۔"
+    },
+    "channel": {
+      "changed": "اس چینل میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
+      "already": "اس چینل میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
+      "current": "اس چینل کی موجودہ زبان: {locale_name} ({locale_code})۔",
+      "subscription_required": "پہلے اس چینل کو اپ ڈیٹس کے لیے سبسکرائب کریں، پھر اس کی زبان بدلیں۔"
+    },
+    "invalid": "نامعلوم زبان: {input_value}۔",
+    "available": "دستیاب زبانیں: {locales}۔",
+    "usage": "`{command}` استعمال کریں۔"
+  }
+}

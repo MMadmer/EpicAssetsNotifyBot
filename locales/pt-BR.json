@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "pt-BR",
+    "name": "Português"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "janeiro",
+          "2": "fevereiro",
+          "3": "março",
+          "4": "abril",
+          "5": "maio",
+          "6": "junho",
+          "7": "julho",
+          "8": "agosto",
+          "9": "setembro",
+          "10": "outubro",
+          "11": "novembro",
+          "12": "dezembro"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "janeiro",
+          "2": "fevereiro",
+          "3": "março",
+          "4": "abril",
+          "5": "maio",
+          "6": "junho",
+          "7": "julho",
+          "8": "agosto",
+          "9": "setembro",
+          "10": "outubro",
+          "11": "novembro",
+          "12": "dezembro"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "até {day} de {month_name}, {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## Assets da Epic de {month_name} ({deadline_suffix})\n",
+    "without_deadline": "## Assets da Epic de {month_name}\n"
+  },
+  "assets": {
+    "untitled": "Sem título"
+  },
+  "errors": {
+    "permission_denied": "Você não tem permissão para executar este comando."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Você já está inscrito.",
+      "success": "Inscrição nas atualizações de assets ativada."
+    },
+    "channel": {
+      "already": "Este canal já está inscrito.",
+      "success": "Inscrição deste canal nas atualizações de assets ativada: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Inscrição nas atualizações de assets cancelada.",
+    "dm": {
+      "not_subscribed": "Você não tem uma inscrição ativa."
+    },
+    "channel": {
+      "not_subscribed": "Este canal não está inscrito."
+    }
+  },
+  "time": {
+    "remaining": "Tempo restante até a próxima verificação: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Ainda não há uma próxima verificação agendada.",
+    "delete_hint": "-# Esta mensagem será excluída em {delete_after} segundos"
+  },
+  "locale": {
+    "dm": {
+      "changed": "O idioma do bot nas suas mensagens diretas agora é {locale_name} ({locale_code}).",
+      "already": "O idioma do bot nas suas mensagens diretas já é {locale_name} ({locale_code}).",
+      "current": "Idioma atual nas mensagens diretas: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "O idioma do bot neste canal agora é {locale_name} ({locale_code}).",
+      "already": "O idioma do bot neste canal já é {locale_name} ({locale_code}).",
+      "current": "Idioma atual deste canal: {locale_name} ({locale_code}).",
+      "subscription_required": "Primeiro inscreva este canal nas atualizações e depois altere o idioma dele."
+    },
+    "invalid": "Idioma desconhecido: {input_value}.",
+    "available": "Idiomas disponíveis: {locales}.",
+    "usage": "Use `{command}`."
+  }
+}

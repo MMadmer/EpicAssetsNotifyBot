@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "ja-JP",
+    "name": "日本語"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "1月",
+          "2": "2月",
+          "3": "3月",
+          "4": "4月",
+          "5": "5月",
+          "6": "6月",
+          "7": "7月",
+          "8": "8月",
+          "9": "9月",
+          "10": "10月",
+          "11": "11月",
+          "12": "12月"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "1月",
+          "2": "2月",
+          "3": "3月",
+          "4": "4月",
+          "5": "5月",
+          "6": "6月",
+          "7": "7月",
+          "8": "8月",
+          "9": "9月",
+          "10": "10月",
+          "11": "11月",
+          "12": "12月"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "{month_name}{day}日 {hour}:{minute:02d} {gmt_offset}まで"
+  },
+  "header": {
+    "with_deadline": "## Epicの{month_name}アセット（{deadline_suffix}）\n",
+    "without_deadline": "## Epicの{month_name}アセット\n"
+  },
+  "assets": {
+    "untitled": "無題"
+  },
+  "errors": {
+    "permission_denied": "このコマンドを実行する権限がありません。"
+  },
+  "subscribe": {
+    "dm": {
+      "already": "すでに登録済みです。",
+      "success": "アセット更新の通知登録を有効にしました。"
+    },
+    "channel": {
+      "already": "このチャンネルはすでに登録済みです。",
+      "success": "このチャンネルでアセット更新通知を有効にしました: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "アセット更新の通知登録を解除しました。",
+    "dm": {
+      "not_subscribed": "有効な登録がありません。"
+    },
+    "channel": {
+      "not_subscribed": "このチャンネルは登録されていません。"
+    }
+  },
+  "time": {
+    "remaining": "次の確認までの時間: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "次の確認はまだ予定されていません。",
+    "delete_hint": "-# このメッセージは {delete_after} 秒後に削除されます"
+  },
+  "locale": {
+    "dm": {
+      "changed": "DMでのボット言語を {locale_name} ({locale_code}) に変更しました。",
+      "already": "DMでのボット言語はすでに {locale_name} ({locale_code}) です。",
+      "current": "現在のDM言語: {locale_name} ({locale_code})。"
+    },
+    "channel": {
+      "changed": "このチャンネルでのボット言語を {locale_name} ({locale_code}) に変更しました。",
+      "already": "このチャンネルでのボット言語はすでに {locale_name} ({locale_code}) です。",
+      "current": "このチャンネルの現在の言語: {locale_name} ({locale_code})。",
+      "subscription_required": "先にこのチャンネルを更新通知に登録してから、言語を変更してください。"
+    },
+    "invalid": "不明な言語です: {input_value}。",
+    "available": "利用可能な言語: {locales}。",
+    "usage": "`{command}` を使用してください。"
+  }
+}

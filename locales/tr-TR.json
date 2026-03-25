@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "tr-TR",
+    "name": "Türkçe"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "Ocak",
+          "2": "Şubat",
+          "3": "Mart",
+          "4": "Nisan",
+          "5": "Mayıs",
+          "6": "Haziran",
+          "7": "Temmuz",
+          "8": "Ağustos",
+          "9": "Eylül",
+          "10": "Ekim",
+          "11": "Kasım",
+          "12": "Aralık"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "Ocak",
+          "2": "Şubat",
+          "3": "Mart",
+          "4": "Nisan",
+          "5": "Mayıs",
+          "6": "Haziran",
+          "7": "Temmuz",
+          "8": "Ağustos",
+          "9": "Eylül",
+          "10": "Ekim",
+          "11": "Kasım",
+          "12": "Aralık"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} tarihine kadar"
+  },
+  "header": {
+    "with_deadline": "## {month_name} Epic varlıkları ({deadline_suffix})\n",
+    "without_deadline": "## {month_name} Epic varlıkları\n"
+  },
+  "assets": {
+    "untitled": "Adsız"
+  },
+  "errors": {
+    "permission_denied": "Bu komutu çalıştırmak için gerekli izne sahip değilsiniz."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Zaten abonesiniz.",
+      "success": "Varlık güncellemeleri aboneliği etkinleştirildi."
+    },
+    "channel": {
+      "already": "Bu kanal zaten abone.",
+      "success": "Bu kanal için varlık güncellemeleri aboneliği etkinleştirildi: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Varlık güncellemeleri aboneliği iptal edildi.",
+    "dm": {
+      "not_subscribed": "Etkin bir aboneliğiniz yok."
+    },
+    "channel": {
+      "not_subscribed": "Bu kanal abone değil."
+    }
+  },
+  "time": {
+    "remaining": "Bir sonraki kontrol için kalan süre: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Henüz planlanmış bir sonraki kontrol yok.",
+    "delete_hint": "-# Bu mesaj {delete_after} saniye sonra silinecek"
+  },
+  "locale": {
+    "dm": {
+      "changed": "DM diliniz artık {locale_name} ({locale_code}).",
+      "already": "DM diliniz zaten {locale_name} ({locale_code}).",
+      "current": "Geçerli DM dili: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "Bu kanalın dili artık {locale_name} ({locale_code}).",
+      "already": "Bu kanalın dili zaten {locale_name} ({locale_code}).",
+      "current": "Bu kanalın geçerli dili: {locale_name} ({locale_code}).",
+      "subscription_required": "Önce bu kanalı güncellemelere abone edin, sonra dilini değiştirin."
+    },
+    "invalid": "Bilinmeyen dil: {input_value}.",
+    "available": "Kullanılabilir diller: {locales}.",
+    "usage": "`{command}` kullanın."
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "code": "az-AZ",
+    "name": "Azərbaycanca"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "yanvar",
+          "2": "fevral",
+          "3": "mart",
+          "4": "aprel",
+          "5": "may",
+          "6": "iyun",
+          "7": "iyul",
+          "8": "avqust",
+          "9": "sentyabr",
+          "10": "oktyabr",
+          "11": "noyabr",
+          "12": "dekabr"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "yanvar",
+          "2": "fevral",
+          "3": "mart",
+          "4": "aprel",
+          "5": "may",
+          "6": "iyun",
+          "7": "iyul",
+          "8": "avqust",
+          "9": "sentyabr",
+          "10": "oktyabr",
+          "11": "noyabr",
+          "12": "dekabr"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} tarixinədək"
+  },
+  "header": {
+    "with_deadline": "## {month_name} üçün Epic assetləri ({deadline_suffix})\n",
+    "without_deadline": "## {month_name} üçün Epic assetləri\n"
+  },
+  "assets": {
+    "untitled": "Adsız"
+  },
+  "errors": {
+    "permission_denied": "Bu əmri icra etmək üçün lazımi icazəniz yoxdur."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "Siz artıq abunəsiniz.",
+      "success": "Asset yeniləmələri üçün abunə aktiv edildi."
+    },
+    "channel": {
+      "already": "Bu kanal artıq abunədir.",
+      "success": "Bu kanal üçün asset yeniləmələri abunəsi aktiv edildi: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Asset yeniləmələri abunəsi ləğv edildi.",
+    "dm": {
+      "not_subscribed": "Aktiv abunəliyiniz yoxdur."
+    },
+    "channel": {
+      "not_subscribed": "Bu kanal abunə deyil."
+    }
+  },
+  "time": {
+    "remaining": "Növbəti yoxlamaya qalan vaxt: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "Hələ növbəti yoxlama planlaşdırılmayıb.",
+    "delete_hint": "-# Bu mesaj {delete_after} saniyədən sonra silinəcək"
+  },
+  "locale": {
+    "dm": {
+      "changed": "Şəxsi mesajlarda bot dili indi {locale_name} ({locale_code}) oldu.",
+      "already": "Şəxsi mesajlarda bot dili artıq {locale_name} ({locale_code}) olaraq qurulub.",
+      "current": "Cari şəxsi mesaj dili: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "Bu kanalda bot dili indi {locale_name} ({locale_code}) oldu.",
+      "already": "Bu kanalda bot dili artıq {locale_name} ({locale_code}) olaraq qurulub.",
+      "current": "Bu kanalın cari dili: {locale_name} ({locale_code}).",
+      "subscription_required": "Əvvəlcə bu kanalı yeniləmələrə abunə edin, sonra dilini dəyişin."
+    },
+    "invalid": "Naməlum dil: {input_value}.",
+    "available": "Mövcud dillər: {locales}.",
+    "usage": "`{command}` istifadə edin."
+  }
+}

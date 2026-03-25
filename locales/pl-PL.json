@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "pl-PL",
-    "name": "Polski"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "styczeń",
-          "2": "luty",
-          "3": "marzec",
-          "4": "kwiecień",
-          "5": "maj",
-          "6": "czerwiec",
-          "7": "lipiec",
-          "8": "sierpień",
-          "9": "wrzesień",
-          "10": "październik",
-          "11": "listopad",
-          "12": "grudzień"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "stycznia",
-          "2": "lutego",
-          "3": "marca",
-          "4": "kwietnia",
-          "5": "maja",
-          "6": "czerwca",
-          "7": "lipca",
-          "8": "sierpnia",
-          "9": "września",
-          "10": "października",
-          "11": "listopada",
-          "12": "grudnia"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "do {day} {month_name}, {hour}:{minute:02d} {gmt_offset}"
-  },
-  "header": {
-    "with_deadline": "## Zasoby Epic na {month_name} ({deadline_suffix})\n",
-    "without_deadline": "## Zasoby Epic na {month_name}\n"
-  },
-  "assets": {
-    "untitled": "Bez nazwy"
-  },
-  "errors": {
-    "permission_denied": "Nie masz uprawnień do wykonania tej komendy."
-  },
-  "subscribe": {
-    "dm": {
-      "already": "Już subskrybujesz powiadomienia.",
-      "success": "Włączono subskrypcję aktualizacji zasobów."
-    },
-    "channel": {
-      "already": "Ten kanał już subskrybuje powiadomienia.",
-      "success": "Włączono subskrypcję aktualizacji zasobów dla kanału: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "Wyłączono subskrypcję aktualizacji zasobów.",
-    "dm": {
-      "not_subscribed": "Nie masz aktywnej subskrypcji."
-    },
-    "channel": {
-      "not_subscribed": "Ten kanał nie subskrybuje powiadomień."
-    }
-  },
-  "time": {
-    "remaining": "Czas do następnego sprawdzenia: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "Następne sprawdzenie nie zostało jeszcze zaplanowane.",
-    "delete_hint": "-# Ta wiadomość zostanie usunięta za {delete_after} sekund"
-  },
-  "locale": {
-    "dm": {
-      "changed": "Język bota w wiadomościach prywatnych zmieniono na {locale_name} ({locale_code}).",
-      "already": "Język bota w wiadomościach prywatnych jest już ustawiony na {locale_name} ({locale_code}).",
-      "current": "Aktualny język w wiadomościach prywatnych: {locale_name} ({locale_code})."
-    },
-    "channel": {
-      "changed": "Język bota na tym kanale zmieniono na {locale_name} ({locale_code}).",
-      "already": "Język bota na tym kanale jest już ustawiony na {locale_name} ({locale_code}).",
-      "current": "Aktualny język bota na tym kanale: {locale_name} ({locale_code}).",
-      "subscription_required": "Najpierw zasubskrybuj ten kanał do aktualizacji, a dopiero potem zmień jego język."
-    },
-    "invalid": "Nieznany język: {input_value}.",
-    "available": "Dostępne języki: {locales}.",
-    "usage": "Użyj `{command}`."
-  }
+﻿{
+    "meta":  {
+                 "code":  "pl-PL",
+                 "name":  "Polski"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "styczeń",
+                                                                    "2":  "luty",
+                                                                    "3":  "marzec",
+                                                                    "4":  "kwiecień",
+                                                                    "5":  "maj",
+                                                                    "6":  "czerwiec",
+                                                                    "7":  "lipiec",
+                                                                    "8":  "sierpień",
+                                                                    "9":  "wrzesień",
+                                                                    "10":  "październik",
+                                                                    "11":  "listopad",
+                                                                    "12":  "grudzień"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "stycznia",
+                                                                "2":  "lutego",
+                                                                "3":  "marca",
+                                                                "4":  "kwietnia",
+                                                                "5":  "maja",
+                                                                "6":  "czerwca",
+                                                                "7":  "lipca",
+                                                                "8":  "sierpnia",
+                                                                "9":  "września",
+                                                                "10":  "października",
+                                                                "11":  "listopada",
+                                                                "12":  "grudnia"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "do {day} {month_name}, {hour}:{minute:02d} {gmt_offset}"
+                 },
+    "header":  {
+                   "with_deadline":  "## Zasoby Epic na {month_name} ({deadline_suffix})\n",
+                   "without_deadline":  "## Zasoby Epic na {month_name}\n"
+               },
+    "assets":  {
+                   "untitled":  "Bez nazwy"
+               },
+    "errors":  {
+                   "permission_denied":  "Nie masz uprawnień do wykonania tej komendy.",
+                   "guild_only":  "Tej komendy można używać tylko na serwerze.",
+                   "invalid_arguments":  "Nieprawidłowe argumenty polecenia."
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "Już subskrybujesz powiadomienia.",
+                                 "success":  "Włączono subskrypcję aktualizacji zasobów."
+                             },
+                      "channel":  {
+                                      "already":  "Ten kanał już subskrybuje powiadomienia.",
+                                      "success":  "Włączono subskrypcję aktualizacji zasobów dla kanału: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "Wyłączono subskrypcję aktualizacji zasobów.",
+                        "dm":  {
+                                   "not_subscribed":  "Nie masz aktywnej subskrypcji."
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "Ten kanał nie subskrybuje powiadomień."
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "Czas do następnego sprawdzenia: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "Następne sprawdzenie nie zostało jeszcze zaplanowane.",
+                 "delete_hint":  "-# Ta wiadomość zostanie usunięta za {delete_after} sekund"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "Język bota w wiadomościach prywatnych zmieniono na {locale_name} ({locale_code}).",
+                              "already":  "Język bota w wiadomościach prywatnych jest już ustawiony na {locale_name} ({locale_code}).",
+                              "current":  "Aktualny język w wiadomościach prywatnych: {locale_name} ({locale_code})."
+                          },
+                   "channel":  {
+                                   "changed":  "Język bota na tym kanale zmieniono na {locale_name} ({locale_code}).",
+                                   "already":  "Język bota na tym kanale jest już ustawiony na {locale_name} ({locale_code}).",
+                                   "current":  "Aktualny język bota na tym kanale: {locale_name} ({locale_code}).",
+                                   "subscription_required":  "Najpierw zasubskrybuj ten kanał do aktualizacji, a dopiero potem zmień jego język."
+                               },
+                   "invalid":  "Nieznany język: {input_value}.",
+                   "available":  "Dostępne języki: {locales}.",
+                   "usage":  "Użyj `{command}`.",
+                   "server":  {
+                                  "changed":  "Język tego serwera to teraz {locale_name} ({locale_code}).",
+                                  "already":  "Język tego serwera jest już ustawiony na {locale_name} ({locale_code}).",
+                                  "current":  "Aktualny język serwera: {locale_name} ({locale_code})."
+                              }
+               },
+    "common":  {
+                   "enabled":  "włączone",
+                   "disabled":  "wyłączone"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "nie ustawiono",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "Aktualizacje assetów są teraz włączone dla {target}.",
+                                  "already":  "Aktualizacje assetów są już włączone dla {target}."
+                              },
+                   "disable":  {
+                                   "success":  "Aktualizacje assetów zostały wyłączone dla tego serwera.",
+                                   "already":  "Aktualizacje assetów są już wyłączone."
+                               },
+                   "channel":  {
+                                   "updated":  "Kanał powiadomień ustawiono na {target}.",
+                                   "already":  "Kanał powiadomień jest już ustawiony na {target}."
+                               },
+                   "thread":  {
+                                  "updated":  "Wątek powiadomień ustawiono na {target}.",
+                                  "already":  "Wątek powiadomień jest już ustawiony na {target}.",
+                                  "cleared":  "Wątek powiadomień został wyczyszczony. Aktywny cel: {target}.",
+                                  "already_cleared":  "Nie skonfigurowano wątku powiadomień.",
+                                  "not_in_thread":  "Uruchom tę komendę wewnątrz wątku, aby powiązać z nim powiadomienia."
+                              },
+                   "role":  {
+                                "updated":  "Wzmiankę o roli ustawiono na {role}.",
+                                "already":  "Wzmianka o roli jest już ustawiona na {role}.",
+                                "cleared":  "Wzmianka o roli została usunięta.",
+                                "already_cleared":  "Nie skonfigurowano wzmianki o roli."
+                            },
+                   "images":  {
+                                  "current":  "Obrazy są obecnie ustawione jako {value}.",
+                                  "updated":  "Obrazy są teraz ustawione jako {value}.",
+                                  "already":  "Obrazy są już ustawione jako {value}.",
+                                  "invalid":  "Użyj `/assets images on` lub `/assets images off`."
+                              },
+                   "settings":  {
+                                    "header":  "## Ustawienia assetów serwera",
+                                    "not_configured":  "Dla tego serwera nie utworzono jeszcze konfiguracji.",
+                                    "hint":  "Użyj `/assets sub`, `/assets set-channel` lub `/assets set-thread`, aby skonfigurować ten serwer.",
+                                    "enabled":  "Status: {value}",
+                                    "channel":  "Kanał: {value}",
+                                    "thread":  "Wątek: {value}",
+                                    "role":  "Wzmianka o roli: {value}",
+                                    "locale":  "Język: {locale_name} ({locale_code})",
+                                    "images":  "Obrazy: {value}",
+                                    "next_check":  "Następne sprawdzenie: {value}",
+                                    "no_next_check":  "jeszcze nie zaplanowano",
+                                    "dm_not_configured":  "Nie masz jeszcze profilu DM.",
+                                    "dm_header":  "## Ustawienia assetów DM",
+                                    "dm_status":  "Status: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "Nie znaleziono konfiguracji serwera. Najpierw ustaw kanał lub włącz aktualizacje.",
+                                "target_missing":  "Nie udało się odnaleźć skonfigurowanego celu powiadomień.",
+                                "body":  "To jest testowe powiadomienie dla **{guild_name}**.",
+                                "sent":  "Wysłano testowe powiadomienie do {target}.",
+                                "failed":  "Nie udało się wysłać testowego powiadomienia: {error}",
+                                "missing_permissions":  "Brakuje uprawnień na celu: {permissions}."
+                            }
+               }
 }

@@ -49,8 +49,14 @@
   "assets": {
     "untitled": "Untitled Listing"
   },
+  "common": {
+    "enabled": "enabled",
+    "disabled": "disabled"
+  },
   "errors": {
-    "permission_denied": "You do not have the necessary permissions to run this command."
+    "permission_denied": "You do not have the necessary permissions to run this command.",
+    "guild_only": "This command can only be used in a server.",
+    "invalid_arguments": "Invalid command arguments."
   },
   "subscribe": {
     "dm": {
@@ -58,17 +64,17 @@
       "success": "Subscribed to asset updates."
     },
     "channel": {
-      "already": "This channel is already subscribed.",
-      "success": "Subscribed this channel to asset updates: {channel_name}"
+      "already": "This server is already subscribed for this target.",
+      "success": "Subscribed asset updates for target: {channel_name}"
     }
   },
   "unsubscribe": {
-    "success": "Unsubscribed from asset updates.",
+    "success": "Asset updates are now disabled.",
     "dm": {
       "not_subscribed": "You are not subscribed."
     },
     "channel": {
-      "not_subscribed": "This channel is not subscribed."
+      "not_subscribed": "This server does not have active asset updates."
     }
   },
   "time": {
@@ -76,17 +82,78 @@
     "no_schedule": "No scheduled check found.",
     "delete_hint": "-# This message will be deleted after {delete_after} seconds"
   },
+  "server": {
+    "target": {
+      "none": "not set",
+      "channel": "<#{channel_id}>",
+      "thread": "<#{thread_id}>"
+    },
+    "enable": {
+      "success": "Asset updates are enabled for {target}.",
+      "already": "Asset updates are already enabled for {target}."
+    },
+    "disable": {
+      "success": "Asset updates are disabled for this server.",
+      "already": "Asset updates are already disabled."
+    },
+    "channel": {
+      "updated": "Notification channel set to {target}.",
+      "already": "Notification channel is already {target}."
+    },
+    "thread": {
+      "updated": "Notification thread set to {target}.",
+      "already": "Notification thread is already {target}.",
+      "cleared": "Notification thread cleared. Active target: {target}.",
+      "already_cleared": "No notification thread is configured.",
+      "not_in_thread": "Run this command inside a thread to bind notifications to it."
+    },
+    "role": {
+      "updated": "Role mention set to {role}.",
+      "already": "Role mention is already {role}.",
+      "cleared": "Role mention cleared.",
+      "already_cleared": "No role mention is configured."
+    },
+    "images": {
+      "current": "Images are currently {value}.",
+      "updated": "Images are now {value}.",
+      "already": "Images are already {value}.",
+      "invalid": "Use `/assets images on` or `/assets images off`."
+    },
+    "settings": {
+      "header": "## Server asset settings",
+      "not_configured": "No server configuration has been created yet.",
+      "hint": "Use `/assets sub`, `/assets set-channel`, or `/assets set-thread` to configure this server.",
+      "enabled": "Status: {value}",
+      "channel": "Channel: {value}",
+      "thread": "Thread: {value}",
+      "role": "Role mention: {value}",
+      "locale": "Language: {locale_name} ({locale_code})",
+      "images": "Images: {value}",
+      "next_check": "Next check: {value}",
+      "no_next_check": "not scheduled yet",
+      "dm_not_configured": "You do not have a DM profile yet.",
+      "dm_header": "## DM asset settings",
+      "dm_status": "Status: {value}"
+    },
+    "test": {
+      "not_configured": "No server configuration found. Set a channel or enable updates first.",
+      "target_missing": "The configured notification target could not be resolved.",
+      "body": "This is a test notification for **{guild_name}**.",
+      "sent": "Test notification sent to {target}.",
+      "failed": "Failed to send test notification: {error}",
+      "missing_permissions": "Missing permissions on the target: {permissions}."
+    }
+  },
   "locale": {
     "dm": {
       "changed": "Your DM language is now {locale_name} ({locale_code}).",
       "already": "Your DM language is already {locale_name} ({locale_code}).",
       "current": "Current DM language: {locale_name} ({locale_code})."
     },
-    "channel": {
-      "changed": "This channel language is now {locale_name} ({locale_code}).",
-      "already": "This channel language is already {locale_name} ({locale_code}).",
-      "current": "Current channel language: {locale_name} ({locale_code}).",
-      "subscription_required": "Subscribe this channel first, then change its language."
+    "server": {
+      "changed": "This server language is now {locale_name} ({locale_code}).",
+      "already": "This server language is already {locale_name} ({locale_code}).",
+      "current": "Current server language: {locale_name} ({locale_code})."
     },
     "invalid": "Unknown language: {input_value}.",
     "available": "Available languages: {locales}.",

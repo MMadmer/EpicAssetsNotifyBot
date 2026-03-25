@@ -7,10 +7,11 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 ## Features
 
 - Daily Fab checks with change detection
-- Channel and DM subscriptions
-- Per-channel language on servers and personal language in DMs
+- Server-level notification config with explicit channel/thread target, role mention, enable/disable switch, and test command
+- Channel and DM subscriptions with backward-compatible aliases
+- Per-server language on servers and personal language in DMs
 - Built-in support for major world languages
-- Asset links with image attachments
+- Asset links with optional image attachments per server
 - Externalized localization catalogs in `locales/`
 - SQLite database storage for subscriptions, user profiles, latest assets, and deadline state
 - Safe one-time migration from legacy JSON backups to the database
@@ -38,10 +39,19 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 
 ## Commands
 
-- `/assets sub`: subscribe the current channel or DM
-- `/assets unsub`: unsubscribe the current channel or DM
+- `/assets sub`: in DMs subscribes you, in servers enables updates and binds the current channel or thread
+- `/assets unsub`: in DMs unsubscribes you, in servers disables updates without deleting the server config
+- `/assets enable` / `/assets disable`: explicit server enable/disable controls
+- `/assets set-channel`: set the current channel as the notification channel
+- `/assets set-thread`: set the current thread as the notification target
+- `/assets clear-thread`: remove the thread target and fall back to the configured channel
+- `/assets set-role @role`: configure a role mention for notifications
+- `/assets clear-role`: remove the configured role mention
+- `/assets images <on|off>`: toggle image attachments for this server
+- `/assets settings`: show the current server or DM configuration
+- `/assets test`: send a test notification to the configured target
 - `/assets time`: show time left until the next check
-- `/assets lang <locale-code>`: in DMs changes your language, in server channels changes that channel language for admins only
+- `/assets lang <locale-code>`: in DMs changes your language, in servers changes the server notification language for admins only
 
 `/assets lang` also shows the current language and available options. Aliases: `/assets locale`, `/assets l`.
 

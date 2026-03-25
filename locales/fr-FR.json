@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "fr-FR",
-    "name": "Français"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "janvier",
-          "2": "février",
-          "3": "mars",
-          "4": "avril",
-          "5": "mai",
-          "6": "juin",
-          "7": "juillet",
-          "8": "août",
-          "9": "septembre",
-          "10": "octobre",
-          "11": "novembre",
-          "12": "décembre"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "janvier",
-          "2": "février",
-          "3": "mars",
-          "4": "avril",
-          "5": "mai",
-          "6": "juin",
-          "7": "juillet",
-          "8": "août",
-          "9": "septembre",
-          "10": "octobre",
-          "11": "novembre",
-          "12": "décembre"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "jusqu’au {day} {month_name} à {hour}:{minute:02d} {gmt_offset}"
-  },
-  "header": {
-    "with_deadline": "## Ressources Epic de {month_name} ({deadline_suffix})\n",
-    "without_deadline": "## Ressources Epic de {month_name}\n"
-  },
-  "assets": {
-    "untitled": "Sans titre"
-  },
-  "errors": {
-    "permission_denied": "Vous n’avez pas les autorisations nécessaires pour exécuter cette commande."
-  },
-  "subscribe": {
-    "dm": {
-      "already": "Vous êtes déjà abonné.",
-      "success": "Abonnement aux mises à jour des ressources activé."
-    },
-    "channel": {
-      "already": "Ce canal est déjà abonné.",
-      "success": "Abonnement de ce canal aux mises à jour des ressources activé : {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "Abonnement aux mises à jour des ressources désactivé.",
-    "dm": {
-      "not_subscribed": "Vous n’avez pas d’abonnement actif."
-    },
-    "channel": {
-      "not_subscribed": "Ce canal n’est pas abonné."
-    }
-  },
-  "time": {
-    "remaining": "Temps restant avant la prochaine vérification : {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "Aucune prochaine vérification n’est encore planifiée.",
-    "delete_hint": "-# Ce message sera supprimé dans {delete_after} secondes"
-  },
-  "locale": {
-    "dm": {
-      "changed": "La langue du bot dans vos messages privés est maintenant {locale_name} ({locale_code}).",
-      "already": "La langue du bot dans vos messages privés est déjà {locale_name} ({locale_code}).",
-      "current": "Langue actuelle des messages privés : {locale_name} ({locale_code})."
-    },
-    "channel": {
-      "changed": "La langue du bot dans ce canal est maintenant {locale_name} ({locale_code}).",
-      "already": "La langue du bot dans ce canal est déjà {locale_name} ({locale_code}).",
-      "current": "Langue actuelle de ce canal : {locale_name} ({locale_code}).",
-      "subscription_required": "Abonnez d’abord ce canal aux mises à jour, puis changez sa langue."
-    },
-    "invalid": "Langue inconnue : {input_value}.",
-    "available": "Langues disponibles : {locales}.",
-    "usage": "Utilisez `{command}`."
-  }
+﻿{
+    "meta":  {
+                 "code":  "fr-FR",
+                 "name":  "Français"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "janvier",
+                                                                    "2":  "février",
+                                                                    "3":  "mars",
+                                                                    "4":  "avril",
+                                                                    "5":  "mai",
+                                                                    "6":  "juin",
+                                                                    "7":  "juillet",
+                                                                    "8":  "août",
+                                                                    "9":  "septembre",
+                                                                    "10":  "octobre",
+                                                                    "11":  "novembre",
+                                                                    "12":  "décembre"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "janvier",
+                                                                "2":  "février",
+                                                                "3":  "mars",
+                                                                "4":  "avril",
+                                                                "5":  "mai",
+                                                                "6":  "juin",
+                                                                "7":  "juillet",
+                                                                "8":  "août",
+                                                                "9":  "septembre",
+                                                                "10":  "octobre",
+                                                                "11":  "novembre",
+                                                                "12":  "décembre"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "jusqu’au {day} {month_name} à {hour}:{minute:02d} {gmt_offset}"
+                 },
+    "header":  {
+                   "with_deadline":  "## Ressources Epic de {month_name} ({deadline_suffix})\n",
+                   "without_deadline":  "## Ressources Epic de {month_name}\n"
+               },
+    "assets":  {
+                   "untitled":  "Sans titre"
+               },
+    "errors":  {
+                   "permission_denied":  "Vous n’avez pas les autorisations nécessaires pour exécuter cette commande.",
+                   "guild_only":  "Cette commande ne peut être utilisée que sur un serveur.",
+                   "invalid_arguments":  "Arguments de commande invalides."
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "Vous êtes déjà abonné.",
+                                 "success":  "Abonnement aux mises à jour des ressources activé."
+                             },
+                      "channel":  {
+                                      "already":  "Ce canal est déjà abonné.",
+                                      "success":  "Abonnement de ce canal aux mises à jour des ressources activé : {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "Abonnement aux mises à jour des ressources désactivé.",
+                        "dm":  {
+                                   "not_subscribed":  "Vous n’avez pas d’abonnement actif."
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "Ce canal n’est pas abonné."
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "Temps restant avant la prochaine vérification : {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "Aucune prochaine vérification n’est encore planifiée.",
+                 "delete_hint":  "-# Ce message sera supprimé dans {delete_after} secondes"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "La langue du bot dans vos messages privés est maintenant {locale_name} ({locale_code}).",
+                              "already":  "La langue du bot dans vos messages privés est déjà {locale_name} ({locale_code}).",
+                              "current":  "Langue actuelle des messages privés : {locale_name} ({locale_code})."
+                          },
+                   "channel":  {
+                                   "changed":  "La langue du bot dans ce canal est maintenant {locale_name} ({locale_code}).",
+                                   "already":  "La langue du bot dans ce canal est déjà {locale_name} ({locale_code}).",
+                                   "current":  "Langue actuelle de ce canal : {locale_name} ({locale_code}).",
+                                   "subscription_required":  "Abonnez d’abord ce canal aux mises à jour, puis changez sa langue."
+                               },
+                   "invalid":  "Langue inconnue : {input_value}.",
+                   "available":  "Langues disponibles : {locales}.",
+                   "usage":  "Utilisez `{command}`.",
+                   "server":  {
+                                  "changed":  "La langue de ce serveur est maintenant {locale_name} ({locale_code}).",
+                                  "already":  "La langue de ce serveur est déjà {locale_name} ({locale_code}).",
+                                  "current":  "Langue actuelle du serveur : {locale_name} ({locale_code})."
+                              }
+               },
+    "common":  {
+                   "enabled":  "activé",
+                   "disabled":  "désactivé"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "non défini",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "Les mises à jour d\u0027assets sont activées pour {target}.",
+                                  "already":  "Les mises à jour d\u0027assets sont déjà activées pour {target}."
+                              },
+                   "disable":  {
+                                   "success":  "Les mises à jour d\u0027assets sont désactivées pour ce serveur.",
+                                   "already":  "Les mises à jour d\u0027assets sont déjà désactivées."
+                               },
+                   "channel":  {
+                                   "updated":  "Le canal de notification a été défini sur {target}.",
+                                   "already":  "Le canal de notification est déjà {target}."
+                               },
+                   "thread":  {
+                                  "updated":  "Le fil de notification a été défini sur {target}.",
+                                  "already":  "Le fil de notification est déjà {target}.",
+                                  "cleared":  "Le fil de notification a été supprimé. Cible active : {target}.",
+                                  "already_cleared":  "Aucun fil de notification n\u0027est configuré.",
+                                  "not_in_thread":  "Exécutez cette commande dans un fil pour y lier les notifications."
+                              },
+                   "role":  {
+                                "updated":  "La mention de rôle a été définie sur {role}.",
+                                "already":  "La mention de rôle est déjà {role}.",
+                                "cleared":  "La mention de rôle a été supprimée.",
+                                "already_cleared":  "Aucune mention de rôle n\u0027est configurée."
+                            },
+                   "images":  {
+                                  "current":  "Les images sont actuellement configurées comme {value}.",
+                                  "updated":  "Les images sont maintenant configurées comme {value}.",
+                                  "already":  "Les images sont déjà configurées comme {value}.",
+                                  "invalid":  "Utilisez `/assets images on` ou `/assets images off`."
+                              },
+                   "settings":  {
+                                    "header":  "## Paramètres des assets du serveur",
+                                    "not_configured":  "Aucune configuration n\u0027a encore été créée pour ce serveur.",
+                                    "hint":  "Utilisez `/assets sub`, `/assets set-channel` ou `/assets set-thread` pour configurer ce serveur.",
+                                    "enabled":  "Statut : {value}",
+                                    "channel":  "Canal : {value}",
+                                    "thread":  "Fil : {value}",
+                                    "role":  "Mention de rôle : {value}",
+                                    "locale":  "Langue : {locale_name} ({locale_code})",
+                                    "images":  "Images : {value}",
+                                    "next_check":  "Prochaine vérification : {value}",
+                                    "no_next_check":  "pas encore planifiée",
+                                    "dm_not_configured":  "Vous n\u0027avez pas encore de profil de MP.",
+                                    "dm_header":  "## Paramètres des assets en MP",
+                                    "dm_status":  "Statut : {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "Aucune configuration de serveur trouvée. Définissez d\u0027abord un canal ou activez les mises à jour.",
+                                "target_missing":  "La cible de notification configurée n\u0027a pas pu être résolue.",
+                                "body":  "Ceci est une notification de test pour **{guild_name}**.",
+                                "sent":  "Notification de test envoyée à {target}.",
+                                "failed":  "Échec de l\u0027envoi de la notification de test : {error}",
+                                "missing_permissions":  "Permissions manquantes sur la cible : {permissions}."
+                            }
+               }
 }

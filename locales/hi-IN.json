@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "hi-IN",
-    "name": "हिन्दी"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "जनवरी",
-          "2": "फ़रवरी",
-          "3": "मार्च",
-          "4": "अप्रैल",
-          "5": "मई",
-          "6": "जून",
-          "7": "जुलाई",
-          "8": "अगस्त",
-          "9": "सितंबर",
-          "10": "अक्टूबर",
-          "11": "नवंबर",
-          "12": "दिसंबर"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "जनवरी",
-          "2": "फ़रवरी",
-          "3": "मार्च",
-          "4": "अप्रैल",
-          "5": "मई",
-          "6": "जून",
-          "7": "जुलाई",
-          "8": "अगस्त",
-          "9": "सितंबर",
-          "10": "अक्टूबर",
-          "11": "नवंबर",
-          "12": "दिसंबर"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} तक"
-  },
-  "header": {
-    "with_deadline": "## {month_name} के Epic एसेट्स ({deadline_suffix})\n",
-    "without_deadline": "## {month_name} के Epic एसेट्स\n"
-  },
-  "assets": {
-    "untitled": "बिना नाम"
-  },
-  "errors": {
-    "permission_denied": "आपको यह कमांड चलाने की अनुमति नहीं है।"
-  },
-  "subscribe": {
-    "dm": {
-      "already": "आप पहले से सदस्य हैं।",
-      "success": "एसेट अपडेट की सदस्यता चालू कर दी गई है।"
-    },
-    "channel": {
-      "already": "यह चैनल पहले से सदस्य है।",
-      "success": "इस चैनल के लिए एसेट अपडेट सदस्यता चालू की गई: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "एसेट अपडेट की सदस्यता बंद कर दी गई है।",
-    "dm": {
-      "not_subscribed": "आपकी कोई सक्रिय सदस्यता नहीं है।"
-    },
-    "channel": {
-      "not_subscribed": "यह चैनल सदस्य नहीं है।"
-    }
-  },
-  "time": {
-    "remaining": "अगली जांच तक समय: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "अगली जांच अभी निर्धारित नहीं है।",
-    "delete_hint": "-# यह संदेश {delete_after} सेकंड में हटा दिया जाएगा"
-  },
-  "locale": {
-    "dm": {
-      "changed": "आपके DM में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
-      "already": "आपके DM में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
-      "current": "DM में वर्तमान भाषा: {locale_name} ({locale_code})।"
-    },
-    "channel": {
-      "changed": "इस चैनल में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
-      "already": "इस चैनल में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
-      "current": "इस चैनल की वर्तमान भाषा: {locale_name} ({locale_code})।",
-      "subscription_required": "पहले इस चैनल को अपडेट के लिए सदस्य बनाइए, फिर उसकी भाषा बदलिए।"
-    },
-    "invalid": "अज्ञात भाषा: {input_value}।",
-    "available": "उपलब्ध भाषाएँ: {locales}।",
-    "usage": "`{command}` का उपयोग करें।"
-  }
+﻿{
+    "meta":  {
+                 "code":  "hi-IN",
+                 "name":  "हिन्दी"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "जनवरी",
+                                                                    "2":  "फ़रवरी",
+                                                                    "3":  "मार्च",
+                                                                    "4":  "अप्रैल",
+                                                                    "5":  "मई",
+                                                                    "6":  "जून",
+                                                                    "7":  "जुलाई",
+                                                                    "8":  "अगस्त",
+                                                                    "9":  "सितंबर",
+                                                                    "10":  "अक्टूबर",
+                                                                    "11":  "नवंबर",
+                                                                    "12":  "दिसंबर"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "जनवरी",
+                                                                "2":  "फ़रवरी",
+                                                                "3":  "मार्च",
+                                                                "4":  "अप्रैल",
+                                                                "5":  "मई",
+                                                                "6":  "जून",
+                                                                "7":  "जुलाई",
+                                                                "8":  "अगस्त",
+                                                                "9":  "सितंबर",
+                                                                "10":  "अक्टूबर",
+                                                                "11":  "नवंबर",
+                                                                "12":  "दिसंबर"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "{day} {month_name} {hour}:{minute:02d} {gmt_offset} तक"
+                 },
+    "header":  {
+                   "with_deadline":  "## {month_name} के Epic एसेट्स ({deadline_suffix})\n",
+                   "without_deadline":  "## {month_name} के Epic एसेट्स\n"
+               },
+    "assets":  {
+                   "untitled":  "बिना नाम"
+               },
+    "errors":  {
+                   "permission_denied":  "आपको यह कमांड चलाने की अनुमति नहीं है।",
+                   "guild_only":  "यह कमांड केवल सर्वर में उपयोग की जा सकती है।",
+                   "invalid_arguments":  "कमांड के आर्ग्युमेंट अमान्य हैं।"
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "आप पहले से सदस्य हैं।",
+                                 "success":  "एसेट अपडेट की सदस्यता चालू कर दी गई है।"
+                             },
+                      "channel":  {
+                                      "already":  "यह चैनल पहले से सदस्य है।",
+                                      "success":  "इस चैनल के लिए एसेट अपडेट सदस्यता चालू की गई: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "एसेट अपडेट की सदस्यता बंद कर दी गई है।",
+                        "dm":  {
+                                   "not_subscribed":  "आपकी कोई सक्रिय सदस्यता नहीं है।"
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "यह चैनल सदस्य नहीं है।"
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "अगली जांच तक समय: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "अगली जांच अभी निर्धारित नहीं है।",
+                 "delete_hint":  "-# यह संदेश {delete_after} सेकंड में हटा दिया जाएगा"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "आपके DM में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
+                              "already":  "आपके DM में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
+                              "current":  "DM में वर्तमान भाषा: {locale_name} ({locale_code})।"
+                          },
+                   "channel":  {
+                                   "changed":  "इस चैनल में बॉट की भाषा अब {locale_name} ({locale_code}) है।",
+                                   "already":  "इस चैनल में बॉट की भाषा पहले से {locale_name} ({locale_code}) है।",
+                                   "current":  "इस चैनल की वर्तमान भाषा: {locale_name} ({locale_code})।",
+                                   "subscription_required":  "पहले इस चैनल को अपडेट के लिए सदस्य बनाइए, फिर उसकी भाषा बदलिए।"
+                               },
+                   "invalid":  "अज्ञात भाषा: {input_value}।",
+                   "available":  "उपलब्ध भाषाएँ: {locales}।",
+                   "usage":  "`{command}` का उपयोग करें।",
+                   "server":  {
+                                  "changed":  "इस सर्वर की भाषा अब {locale_name} ({locale_code}) है।",
+                                  "already":  "इस सर्वर की भाषा पहले से {locale_name} ({locale_code}) है।",
+                                  "current":  "वर्तमान सर्वर भाषा: {locale_name} ({locale_code})।"
+                              }
+               },
+    "common":  {
+                   "enabled":  "चालू",
+                   "disabled":  "बंद"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "सेट नहीं है",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "एसेट अपडेट अब {target} के लिए सक्षम हैं।",
+                                  "already":  "एसेट अपडेट पहले से ही {target} के लिए सक्षम हैं।"
+                              },
+                   "disable":  {
+                                   "success":  "इस सर्वर के लिए एसेट अपडेट अक्षम कर दिए गए हैं।",
+                                   "already":  "एसेट अपडेट पहले से ही अक्षम हैं।"
+                               },
+                   "channel":  {
+                                   "updated":  "नोटिफिकेशन चैनल {target} पर सेट कर दिया गया है।",
+                                   "already":  "नोटिफिकेशन चैनल पहले से {target} है।"
+                               },
+                   "thread":  {
+                                  "updated":  "नोटिफिकेशन थ्रेड {target} पर सेट कर दिया गया है।",
+                                  "already":  "नोटिफिकेशन थ्रेड पहले से {target} है।",
+                                  "cleared":  "नोटिफिकेशन थ्रेड हटा दिया गया है। सक्रिय लक्ष्य: {target}।",
+                                  "already_cleared":  "कोई नोटिफिकेशन थ्रेड कॉन्फ़िगर नहीं है।",
+                                  "not_in_thread":  "नोटिफिकेशन को इसी थ्रेड से जोड़ने के लिए यह कमांड थ्रेड के अंदर चलाएँ।"
+                              },
+                   "role":  {
+                                "updated":  "रोल मेंशन {role} पर सेट कर दिया गया है।",
+                                "already":  "रोल मेंशन पहले से {role} है।",
+                                "cleared":  "रोल मेंशन हटा दिया गया है।",
+                                "already_cleared":  "कोई रोल मेंशन कॉन्फ़िगर नहीं है।"
+                            },
+                   "images":  {
+                                  "current":  "इमेज अभी {value} हैं।",
+                                  "updated":  "इमेज अब {value} हैं।",
+                                  "already":  "इमेज पहले से {value} हैं।",
+                                  "invalid":  "`/assets images on` या `/assets images off` का उपयोग करें।"
+                              },
+                   "settings":  {
+                                    "header":  "## सर्वर एसेट सेटिंग्स",
+                                    "not_configured":  "इस सर्वर के लिए अभी तक कोई कॉन्फ़िगरेशन नहीं बनाई गई है।",
+                                    "hint":  "इस सर्वर को कॉन्फ़िगर करने के लिए `/assets sub`, `/assets set-channel` या `/assets set-thread` का उपयोग करें।",
+                                    "enabled":  "स्थिति: {value}",
+                                    "channel":  "चैनल: {value}",
+                                    "thread":  "थ्रेड: {value}",
+                                    "role":  "रोल मेंशन: {value}",
+                                    "locale":  "भाषा: {locale_name} ({locale_code})",
+                                    "images":  "इमेज: {value}",
+                                    "next_check":  "अगली जांच: {value}",
+                                    "no_next_check":  "अभी तक निर्धारित नहीं",
+                                    "dm_not_configured":  "आपके लिए अभी तक कोई DM प्रोफ़ाइल नहीं है।",
+                                    "dm_header":  "## DM एसेट सेटिंग्स",
+                                    "dm_status":  "स्थिति: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "सर्वर कॉन्फ़िगरेशन नहीं मिला। पहले कोई चैनल सेट करें या अपडेट सक्षम करें।",
+                                "target_missing":  "कॉनफ़िगर किया गया नोटिफिकेशन लक्ष्य नहीं मिला।",
+                                "body":  "यह **{guild_name}** के लिए एक टेस्ट नोटिफिकेशन है।",
+                                "sent":  "टेस्ट नोटिफिकेशन {target} पर भेज दी गई है।",
+                                "failed":  "टेस्ट नोटिफिकेशन भेजने में विफल: {error}",
+                                "missing_permissions":  "लक्ष्य पर आवश्यक परमिशन नहीं हैं: {permissions}."
+                            }
+               }
 }

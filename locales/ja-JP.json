@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "ja-JP",
-    "name": "日本語"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "1月",
-          "2": "2月",
-          "3": "3月",
-          "4": "4月",
-          "5": "5月",
-          "6": "6月",
-          "7": "7月",
-          "8": "8月",
-          "9": "9月",
-          "10": "10月",
-          "11": "11月",
-          "12": "12月"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "1月",
-          "2": "2月",
-          "3": "3月",
-          "4": "4月",
-          "5": "5月",
-          "6": "6月",
-          "7": "7月",
-          "8": "8月",
-          "9": "9月",
-          "10": "10月",
-          "11": "11月",
-          "12": "12月"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "{month_name}{day}日 {hour}:{minute:02d} {gmt_offset}まで"
-  },
-  "header": {
-    "with_deadline": "## Epicの{month_name}アセット（{deadline_suffix}）\n",
-    "without_deadline": "## Epicの{month_name}アセット\n"
-  },
-  "assets": {
-    "untitled": "無題"
-  },
-  "errors": {
-    "permission_denied": "このコマンドを実行する権限がありません。"
-  },
-  "subscribe": {
-    "dm": {
-      "already": "すでに登録済みです。",
-      "success": "アセット更新の通知登録を有効にしました。"
-    },
-    "channel": {
-      "already": "このチャンネルはすでに登録済みです。",
-      "success": "このチャンネルでアセット更新通知を有効にしました: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "アセット更新の通知登録を解除しました。",
-    "dm": {
-      "not_subscribed": "有効な登録がありません。"
-    },
-    "channel": {
-      "not_subscribed": "このチャンネルは登録されていません。"
-    }
-  },
-  "time": {
-    "remaining": "次の確認までの時間: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "次の確認はまだ予定されていません。",
-    "delete_hint": "-# このメッセージは {delete_after} 秒後に削除されます"
-  },
-  "locale": {
-    "dm": {
-      "changed": "DMでのボット言語を {locale_name} ({locale_code}) に変更しました。",
-      "already": "DMでのボット言語はすでに {locale_name} ({locale_code}) です。",
-      "current": "現在のDM言語: {locale_name} ({locale_code})。"
-    },
-    "channel": {
-      "changed": "このチャンネルでのボット言語を {locale_name} ({locale_code}) に変更しました。",
-      "already": "このチャンネルでのボット言語はすでに {locale_name} ({locale_code}) です。",
-      "current": "このチャンネルの現在の言語: {locale_name} ({locale_code})。",
-      "subscription_required": "先にこのチャンネルを更新通知に登録してから、言語を変更してください。"
-    },
-    "invalid": "不明な言語です: {input_value}。",
-    "available": "利用可能な言語: {locales}。",
-    "usage": "`{command}` を使用してください。"
-  }
+﻿{
+    "meta":  {
+                 "code":  "ja-JP",
+                 "name":  "日本語"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "1月",
+                                                                    "2":  "2月",
+                                                                    "3":  "3月",
+                                                                    "4":  "4月",
+                                                                    "5":  "5月",
+                                                                    "6":  "6月",
+                                                                    "7":  "7月",
+                                                                    "8":  "8月",
+                                                                    "9":  "9月",
+                                                                    "10":  "10月",
+                                                                    "11":  "11月",
+                                                                    "12":  "12月"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "1月",
+                                                                "2":  "2月",
+                                                                "3":  "3月",
+                                                                "4":  "4月",
+                                                                "5":  "5月",
+                                                                "6":  "6月",
+                                                                "7":  "7月",
+                                                                "8":  "8月",
+                                                                "9":  "9月",
+                                                                "10":  "10月",
+                                                                "11":  "11月",
+                                                                "12":  "12月"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "{month_name}{day}日 {hour}:{minute:02d} {gmt_offset}まで"
+                 },
+    "header":  {
+                   "with_deadline":  "## Epicの{month_name}アセット（{deadline_suffix}）\n",
+                   "without_deadline":  "## Epicの{month_name}アセット\n"
+               },
+    "assets":  {
+                   "untitled":  "無題"
+               },
+    "errors":  {
+                   "permission_denied":  "このコマンドを実行する権限がありません。",
+                   "guild_only":  "このコマンドはサーバー内でのみ使用できます。",
+                   "invalid_arguments":  "コマンド引数が無効です。"
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "すでに登録済みです。",
+                                 "success":  "アセット更新の通知登録を有効にしました。"
+                             },
+                      "channel":  {
+                                      "already":  "このチャンネルはすでに登録済みです。",
+                                      "success":  "このチャンネルでアセット更新通知を有効にしました: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "アセット更新の通知登録を解除しました。",
+                        "dm":  {
+                                   "not_subscribed":  "有効な登録がありません。"
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "このチャンネルは登録されていません。"
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "次の確認までの時間: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "次の確認はまだ予定されていません。",
+                 "delete_hint":  "-# このメッセージは {delete_after} 秒後に削除されます"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "DMでのボット言語を {locale_name} ({locale_code}) に変更しました。",
+                              "already":  "DMでのボット言語はすでに {locale_name} ({locale_code}) です。",
+                              "current":  "現在のDM言語: {locale_name} ({locale_code})。"
+                          },
+                   "channel":  {
+                                   "changed":  "このチャンネルでのボット言語を {locale_name} ({locale_code}) に変更しました。",
+                                   "already":  "このチャンネルでのボット言語はすでに {locale_name} ({locale_code}) です。",
+                                   "current":  "このチャンネルの現在の言語: {locale_name} ({locale_code})。",
+                                   "subscription_required":  "先にこのチャンネルを更新通知に登録してから、言語を変更してください。"
+                               },
+                   "invalid":  "不明な言語です: {input_value}。",
+                   "available":  "利用可能な言語: {locales}。",
+                   "usage":  "`{command}` を使用してください。",
+                   "server":  {
+                                  "changed":  "このサーバーの言語は {locale_name} ({locale_code}) になりました。",
+                                  "already":  "このサーバーの言語はすでに {locale_name} ({locale_code}) です。",
+                                  "current":  "現在のサーバー言語: {locale_name} ({locale_code})。"
+                              }
+               },
+    "common":  {
+                   "enabled":  "有効",
+                   "disabled":  "無効"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "未設定",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "{target} のアセット更新を有効にしました。",
+                                  "already":  "{target} のアセット更新はすでに有効です。"
+                              },
+                   "disable":  {
+                                   "success":  "このサーバーのアセット更新を無効にしました。",
+                                   "already":  "アセット更新はすでに無効です。"
+                               },
+                   "channel":  {
+                                   "updated":  "通知チャンネルを {target} に設定しました。",
+                                   "already":  "通知チャンネルはすでに {target} です。"
+                               },
+                   "thread":  {
+                                  "updated":  "通知スレッドを {target} に設定しました。",
+                                  "already":  "通知スレッドはすでに {target} です。",
+                                  "cleared":  "通知スレッドを解除しました。現在の送信先: {target}。",
+                                  "already_cleared":  "通知スレッドは設定されていません。",
+                                  "not_in_thread":  "通知先をこのスレッドに関連付けるには、スレッド内でこのコマンドを実行してください。"
+                              },
+                   "role":  {
+                                "updated":  "ロールメンションを {role} に設定しました。",
+                                "already":  "ロールメンションはすでに {role} です。",
+                                "cleared":  "ロールメンションを解除しました。",
+                                "already_cleared":  "ロールメンションは設定されていません。"
+                            },
+                   "images":  {
+                                  "current":  "画像は現在 {value} です。",
+                                  "updated":  "画像設定を {value} にしました。",
+                                  "already":  "画像はすでに {value} です。",
+                                  "invalid":  "`/assets images on` または `/assets images off` を使用してください。"
+                              },
+                   "settings":  {
+                                    "header":  "## サーバーのアセット設定",
+                                    "not_configured":  "このサーバーの設定はまだ作成されていません。",
+                                    "hint":  "このサーバーを設定するには、`/assets sub`、`/assets set-channel`、または `/assets set-thread` を使用してください。",
+                                    "enabled":  "状態: {value}",
+                                    "channel":  "チャンネル: {value}",
+                                    "thread":  "スレッド: {value}",
+                                    "role":  "ロールメンション: {value}",
+                                    "locale":  "言語: {locale_name} ({locale_code})",
+                                    "images":  "画像: {value}",
+                                    "next_check":  "次回チェック: {value}",
+                                    "no_next_check":  "まだ予定されていません",
+                                    "dm_not_configured":  "DMプロフィールはまだ作成されていません。",
+                                    "dm_header":  "## DM のアセット設定",
+                                    "dm_status":  "状態: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "サーバー設定が見つかりません。先にチャンネルを設定するか、更新を有効にしてください。",
+                                "target_missing":  "設定された通知先を解決できませんでした。",
+                                "body":  "これは **{guild_name}** 向けのテスト通知です。",
+                                "sent":  "テスト通知を {target} に送信しました。",
+                                "failed":  "テスト通知の送信に失敗しました: {error}",
+                                "missing_permissions":  "送信先に必要な権限がありません: {permissions}。"
+                            }
+               }
 }

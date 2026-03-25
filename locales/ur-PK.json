@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "ur-PK",
-    "name": "اردو"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "جنوری",
-          "2": "فروری",
-          "3": "مارچ",
-          "4": "اپریل",
-          "5": "مئی",
-          "6": "جون",
-          "7": "جولائی",
-          "8": "اگست",
-          "9": "ستمبر",
-          "10": "اکتوبر",
-          "11": "نومبر",
-          "12": "دسمبر"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "جنوری",
-          "2": "فروری",
-          "3": "مارچ",
-          "4": "اپریل",
-          "5": "مئی",
-          "6": "جون",
-          "7": "جولائی",
-          "8": "اگست",
-          "9": "ستمبر",
-          "10": "اکتوبر",
-          "11": "نومبر",
-          "12": "دسمبر"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} تک"
-  },
-  "header": {
-    "with_deadline": "## {month_name} کے Epic اثاثے ({deadline_suffix})\n",
-    "without_deadline": "## {month_name} کے Epic اثاثے\n"
-  },
-  "assets": {
-    "untitled": "بلا عنوان"
-  },
-  "errors": {
-    "permission_denied": "آپ کے پاس یہ کمانڈ چلانے کی اجازت نہیں ہے۔"
-  },
-  "subscribe": {
-    "dm": {
-      "already": "آپ پہلے ہی سبسکرائب ہیں۔",
-      "success": "اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے۔"
-    },
-    "channel": {
-      "already": "یہ چینل پہلے ہی سبسکرائب ہے۔",
-      "success": "اس چینل کے لیے اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "اثاثوں کی تازہ کاریوں کی رکنیت منسوخ کر دی گئی ہے۔",
-    "dm": {
-      "not_subscribed": "آپ کی کوئی فعال رکنیت نہیں ہے۔"
-    },
-    "channel": {
-      "not_subscribed": "یہ چینل سبسکرائب نہیں ہے۔"
-    }
-  },
-  "time": {
-    "remaining": "اگلی جانچ تک باقی وقت: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "اگلی جانچ ابھی طے نہیں کی گئی۔",
-    "delete_hint": "-# یہ پیغام {delete_after} سیکنڈ بعد حذف کر دیا جائے گا"
-  },
-  "locale": {
-    "dm": {
-      "changed": "آپ کے نجی پیغامات میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
-      "already": "آپ کے نجی پیغامات میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
-      "current": "نجی پیغامات کی موجودہ زبان: {locale_name} ({locale_code})۔"
-    },
-    "channel": {
-      "changed": "اس چینل میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
-      "already": "اس چینل میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
-      "current": "اس چینل کی موجودہ زبان: {locale_name} ({locale_code})۔",
-      "subscription_required": "پہلے اس چینل کو اپ ڈیٹس کے لیے سبسکرائب کریں، پھر اس کی زبان بدلیں۔"
-    },
-    "invalid": "نامعلوم زبان: {input_value}۔",
-    "available": "دستیاب زبانیں: {locales}۔",
-    "usage": "`{command}` استعمال کریں۔"
-  }
+﻿{
+    "meta":  {
+                 "code":  "ur-PK",
+                 "name":  "اردو"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "جنوری",
+                                                                    "2":  "فروری",
+                                                                    "3":  "مارچ",
+                                                                    "4":  "اپریل",
+                                                                    "5":  "مئی",
+                                                                    "6":  "جون",
+                                                                    "7":  "جولائی",
+                                                                    "8":  "اگست",
+                                                                    "9":  "ستمبر",
+                                                                    "10":  "اکتوبر",
+                                                                    "11":  "نومبر",
+                                                                    "12":  "دسمبر"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "جنوری",
+                                                                "2":  "فروری",
+                                                                "3":  "مارچ",
+                                                                "4":  "اپریل",
+                                                                "5":  "مئی",
+                                                                "6":  "جون",
+                                                                "7":  "جولائی",
+                                                                "8":  "اگست",
+                                                                "9":  "ستمبر",
+                                                                "10":  "اکتوبر",
+                                                                "11":  "نومبر",
+                                                                "12":  "دسمبر"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "{day} {month_name} {hour}:{minute:02d} {gmt_offset} تک"
+                 },
+    "header":  {
+                   "with_deadline":  "## {month_name} کے Epic اثاثے ({deadline_suffix})\n",
+                   "without_deadline":  "## {month_name} کے Epic اثاثے\n"
+               },
+    "assets":  {
+                   "untitled":  "بلا عنوان"
+               },
+    "errors":  {
+                   "permission_denied":  "آپ کے پاس یہ کمانڈ چلانے کی اجازت نہیں ہے۔",
+                   "guild_only":  "یہ کمانڈ صرف سرور میں استعمال کی جا سکتی ہے۔",
+                   "invalid_arguments":  "کمانڈ کے آرگیومنٹس غلط ہیں۔"
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "آپ پہلے ہی سبسکرائب ہیں۔",
+                                 "success":  "اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے۔"
+                             },
+                      "channel":  {
+                                      "already":  "یہ چینل پہلے ہی سبسکرائب ہے۔",
+                                      "success":  "اس چینل کے لیے اثاثوں کی تازہ کاریوں کی رکنیت فعال کر دی گئی ہے: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "اثاثوں کی تازہ کاریوں کی رکنیت منسوخ کر دی گئی ہے۔",
+                        "dm":  {
+                                   "not_subscribed":  "آپ کی کوئی فعال رکنیت نہیں ہے۔"
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "یہ چینل سبسکرائب نہیں ہے۔"
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "اگلی جانچ تک باقی وقت: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "اگلی جانچ ابھی طے نہیں کی گئی۔",
+                 "delete_hint":  "-# یہ پیغام {delete_after} سیکنڈ بعد حذف کر دیا جائے گا"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "آپ کے نجی پیغامات میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
+                              "already":  "آپ کے نجی پیغامات میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
+                              "current":  "نجی پیغامات کی موجودہ زبان: {locale_name} ({locale_code})۔"
+                          },
+                   "channel":  {
+                                   "changed":  "اس چینل میں بوٹ کی زبان اب {locale_name} ({locale_code}) ہے۔",
+                                   "already":  "اس چینل میں بوٹ کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
+                                   "current":  "اس چینل کی موجودہ زبان: {locale_name} ({locale_code})۔",
+                                   "subscription_required":  "پہلے اس چینل کو اپ ڈیٹس کے لیے سبسکرائب کریں، پھر اس کی زبان بدلیں۔"
+                               },
+                   "invalid":  "نامعلوم زبان: {input_value}۔",
+                   "available":  "دستیاب زبانیں: {locales}۔",
+                   "usage":  "`{command}` استعمال کریں۔",
+                   "server":  {
+                                  "changed":  "اس سرور کی زبان اب {locale_name} ({locale_code}) ہے۔",
+                                  "already":  "اس سرور کی زبان پہلے ہی {locale_name} ({locale_code}) ہے۔",
+                                  "current":  "موجودہ سرور زبان: {locale_name} ({locale_code})۔"
+                              }
+               },
+    "common":  {
+                   "enabled":  "فعال",
+                   "disabled":  "غیرفعال"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "سیٹ نہیں ہے",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "{target} کے لیے assets کی اپڈیٹس فعال کر دی گئی ہیں۔",
+                                  "already":  "{target} کے لیے assets کی اپڈیٹس پہلے ہی فعال ہیں۔"
+                              },
+                   "disable":  {
+                                   "success":  "اس سرور کے لیے assets کی اپڈیٹس غیر فعال کر دی گئی ہیں۔",
+                                   "already":  "Assets کی اپڈیٹس پہلے ہی غیر فعال ہیں۔"
+                               },
+                   "channel":  {
+                                   "updated":  "نوٹیفکیشن چینل {target} پر سیٹ کر دیا گیا ہے۔",
+                                   "already":  "نوٹیفکیشن چینل پہلے ہی {target} ہے۔"
+                               },
+                   "thread":  {
+                                  "updated":  "نوٹیفکیشن تھریڈ {target} پر سیٹ کر دیا گیا ہے۔",
+                                  "already":  "نوٹیفکیشن تھریڈ پہلے ہی {target} ہے۔",
+                                  "cleared":  "نوٹیفکیشن تھریڈ ہٹا دیا گیا ہے۔ فعال ہدف: {target}۔",
+                                  "already_cleared":  "کوئی نوٹیفکیشن تھریڈ سیٹ نہیں ہے۔",
+                                  "not_in_thread":  "نوٹیفکیشنز کو اسی تھریڈ سے جوڑنے کے لیے یہ کمانڈ تھریڈ کے اندر چلائیں۔"
+                              },
+                   "role":  {
+                                "updated":  "رول مینشن {role} پر سیٹ کر دیا گیا ہے۔",
+                                "already":  "رول مینشن پہلے ہی {role} ہے۔",
+                                "cleared":  "رول مینشن ہٹا دیا گیا ہے۔",
+                                "already_cleared":  "کوئی رول مینشن سیٹ نہیں ہے۔"
+                            },
+                   "images":  {
+                                  "current":  "تصاویر اس وقت {value} ہیں۔",
+                                  "updated":  "تصاویر اب {value} ہیں۔",
+                                  "already":  "تصاویر پہلے ہی {value} ہیں۔",
+                                  "invalid":  "`/assets images on` یا `/assets images off` استعمال کریں۔"
+                              },
+                   "settings":  {
+                                    "header":  "## سرور assets کی ترتیبات",
+                                    "not_configured":  "اس سرور کے لیے ابھی تک کوئی کنفیگریشن نہیں بنائی گئی۔",
+                                    "hint":  "اس سرور کو ترتیب دینے کے لیے `/assets sub`، `/assets set-channel` یا `/assets set-thread` استعمال کریں۔",
+                                    "enabled":  "حالت: {value}",
+                                    "channel":  "چینل: {value}",
+                                    "thread":  "تھریڈ: {value}",
+                                    "role":  "رول مینشن: {value}",
+                                    "locale":  "زبان: {locale_name} ({locale_code})",
+                                    "images":  "تصاویر: {value}",
+                                    "next_check":  "اگلی جانچ: {value}",
+                                    "no_next_check":  "ابھی شیڈول نہیں ہوا",
+                                    "dm_not_configured":  "آپ کے پاس ابھی تک DM پروفائل نہیں ہے۔",
+                                    "dm_header":  "## DM assets کی ترتیبات",
+                                    "dm_status":  "حالت: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "سرور کنفیگریشن نہیں ملی۔ پہلے کوئی چینل سیٹ کریں یا اپڈیٹس فعال کریں۔",
+                                "target_missing":  "ترتیب دیا گیا نوٹیفکیشن ہدف نہیں مل سکا۔",
+                                "body":  "یہ **{guild_name}** کے لیے ایک ٹیسٹ نوٹیفکیشن ہے۔",
+                                "sent":  "ٹیسٹ نوٹیفکیشن {target} پر بھیج دیا گیا ہے۔",
+                                "failed":  "ٹیسٹ نوٹیفکیشن بھیجنا ناکام رہا: {error}",
+                                "missing_permissions":  "ہدف پر مطلوبہ اجازتیں موجود نہیں: {permissions}۔"
+                            }
+               }
 }

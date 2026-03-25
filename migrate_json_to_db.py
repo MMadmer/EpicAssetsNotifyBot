@@ -32,7 +32,7 @@ async def migrate() -> None:
     database = DatabaseManager(database_url)
     try:
         await database.initialize()
-        migrated = await database.migrate_legacy_snapshot_if_empty(legacy_snapshot)
+        migrated = await database.import_legacy_snapshot_if_empty(legacy_snapshot)
 
         if not migrated:
             logger.info(
@@ -40,10 +40,11 @@ async def migrate() -> None:
             )
             return
 
+        channels = await database.load_legacy_channel_subscriptions()
         snapshot = await database.load_snapshot()
         logger.info(
             "Migration completed successfully: "
-            f"{len(snapshot.channels)} channels, "
+            f"{len(channels)} legacy channels, "
             f"{len(snapshot.user_profiles)} user profiles, "
             f"{len(snapshot.assets)} assets."
         )

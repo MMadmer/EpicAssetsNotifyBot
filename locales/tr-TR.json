@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "tr-TR",
-    "name": "Türkçe"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "Ocak",
-          "2": "Şubat",
-          "3": "Mart",
-          "4": "Nisan",
-          "5": "Mayıs",
-          "6": "Haziran",
-          "7": "Temmuz",
-          "8": "Ağustos",
-          "9": "Eylül",
-          "10": "Ekim",
-          "11": "Kasım",
-          "12": "Aralık"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "Ocak",
-          "2": "Şubat",
-          "3": "Mart",
-          "4": "Nisan",
-          "5": "Mayıs",
-          "6": "Haziran",
-          "7": "Temmuz",
-          "8": "Ağustos",
-          "9": "Eylül",
-          "10": "Ekim",
-          "11": "Kasım",
-          "12": "Aralık"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "{day} {month_name} {hour}:{minute:02d} {gmt_offset} tarihine kadar"
-  },
-  "header": {
-    "with_deadline": "## {month_name} Epic varlıkları ({deadline_suffix})\n",
-    "without_deadline": "## {month_name} Epic varlıkları\n"
-  },
-  "assets": {
-    "untitled": "Adsız"
-  },
-  "errors": {
-    "permission_denied": "Bu komutu çalıştırmak için gerekli izne sahip değilsiniz."
-  },
-  "subscribe": {
-    "dm": {
-      "already": "Zaten abonesiniz.",
-      "success": "Varlık güncellemeleri aboneliği etkinleştirildi."
-    },
-    "channel": {
-      "already": "Bu kanal zaten abone.",
-      "success": "Bu kanal için varlık güncellemeleri aboneliği etkinleştirildi: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "Varlık güncellemeleri aboneliği iptal edildi.",
-    "dm": {
-      "not_subscribed": "Etkin bir aboneliğiniz yok."
-    },
-    "channel": {
-      "not_subscribed": "Bu kanal abone değil."
-    }
-  },
-  "time": {
-    "remaining": "Bir sonraki kontrol için kalan süre: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "Henüz planlanmış bir sonraki kontrol yok.",
-    "delete_hint": "-# Bu mesaj {delete_after} saniye sonra silinecek"
-  },
-  "locale": {
-    "dm": {
-      "changed": "DM diliniz artık {locale_name} ({locale_code}).",
-      "already": "DM diliniz zaten {locale_name} ({locale_code}).",
-      "current": "Geçerli DM dili: {locale_name} ({locale_code})."
-    },
-    "channel": {
-      "changed": "Bu kanalın dili artık {locale_name} ({locale_code}).",
-      "already": "Bu kanalın dili zaten {locale_name} ({locale_code}).",
-      "current": "Bu kanalın geçerli dili: {locale_name} ({locale_code}).",
-      "subscription_required": "Önce bu kanalı güncellemelere abone edin, sonra dilini değiştirin."
-    },
-    "invalid": "Bilinmeyen dil: {input_value}.",
-    "available": "Kullanılabilir diller: {locales}.",
-    "usage": "`{command}` kullanın."
-  }
+﻿{
+    "meta":  {
+                 "code":  "tr-TR",
+                 "name":  "Türkçe"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "Ocak",
+                                                                    "2":  "Şubat",
+                                                                    "3":  "Mart",
+                                                                    "4":  "Nisan",
+                                                                    "5":  "Mayıs",
+                                                                    "6":  "Haziran",
+                                                                    "7":  "Temmuz",
+                                                                    "8":  "Ağustos",
+                                                                    "9":  "Eylül",
+                                                                    "10":  "Ekim",
+                                                                    "11":  "Kasım",
+                                                                    "12":  "Aralık"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "Ocak",
+                                                                "2":  "Şubat",
+                                                                "3":  "Mart",
+                                                                "4":  "Nisan",
+                                                                "5":  "Mayıs",
+                                                                "6":  "Haziran",
+                                                                "7":  "Temmuz",
+                                                                "8":  "Ağustos",
+                                                                "9":  "Eylül",
+                                                                "10":  "Ekim",
+                                                                "11":  "Kasım",
+                                                                "12":  "Aralık"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "{day} {month_name} {hour}:{minute:02d} {gmt_offset} tarihine kadar"
+                 },
+    "header":  {
+                   "with_deadline":  "## {month_name} Epic varlıkları ({deadline_suffix})\n",
+                   "without_deadline":  "## {month_name} Epic varlıkları\n"
+               },
+    "assets":  {
+                   "untitled":  "Adsız"
+               },
+    "errors":  {
+                   "permission_denied":  "Bu komutu çalıştırmak için gerekli izne sahip değilsiniz.",
+                   "guild_only":  "Bu komut yalnızca bir sunucuda kullanılabilir.",
+                   "invalid_arguments":  "Geçersiz komut argümanları."
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "Zaten abonesiniz.",
+                                 "success":  "Varlık güncellemeleri aboneliği etkinleştirildi."
+                             },
+                      "channel":  {
+                                      "already":  "Bu kanal zaten abone.",
+                                      "success":  "Bu kanal için varlık güncellemeleri aboneliği etkinleştirildi: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "Varlık güncellemeleri aboneliği iptal edildi.",
+                        "dm":  {
+                                   "not_subscribed":  "Etkin bir aboneliğiniz yok."
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "Bu kanal abone değil."
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "Bir sonraki kontrol için kalan süre: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "Henüz planlanmış bir sonraki kontrol yok.",
+                 "delete_hint":  "-# Bu mesaj {delete_after} saniye sonra silinecek"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "DM diliniz artık {locale_name} ({locale_code}).",
+                              "already":  "DM diliniz zaten {locale_name} ({locale_code}).",
+                              "current":  "Geçerli DM dili: {locale_name} ({locale_code})."
+                          },
+                   "channel":  {
+                                   "changed":  "Bu kanalın dili artık {locale_name} ({locale_code}).",
+                                   "already":  "Bu kanalın dili zaten {locale_name} ({locale_code}).",
+                                   "current":  "Bu kanalın geçerli dili: {locale_name} ({locale_code}).",
+                                   "subscription_required":  "Önce bu kanalı güncellemelere abone edin, sonra dilini değiştirin."
+                               },
+                   "invalid":  "Bilinmeyen dil: {input_value}.",
+                   "available":  "Kullanılabilir diller: {locales}.",
+                   "usage":  "`{command}` kullanın.",
+                   "server":  {
+                                  "changed":  "Bu sunucunun dili artık {locale_name} ({locale_code}).",
+                                  "already":  "Bu sunucunun dili zaten {locale_name} ({locale_code}).",
+                                  "current":  "Geçerli sunucu dili: {locale_name} ({locale_code})."
+                              }
+               },
+    "common":  {
+                   "enabled":  "açık",
+                   "disabled":  "kapalı"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "ayarlanmadı",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "{target} için asset güncellemeleri etkinleştirildi.",
+                                  "already":  "{target} için asset güncellemeleri zaten etkin."
+                              },
+                   "disable":  {
+                                   "success":  "Bu sunucu için asset güncellemeleri devre dışı bırakıldı.",
+                                   "already":  "Asset güncellemeleri zaten devre dışı."
+                               },
+                   "channel":  {
+                                   "updated":  "Bildirim kanalı {target} olarak ayarlandı.",
+                                   "already":  "Bildirim kanalı zaten {target}."
+                               },
+                   "thread":  {
+                                  "updated":  "Bildirim thread\u0027i {target} olarak ayarlandı.",
+                                  "already":  "Bildirim thread\u0027i zaten {target}.",
+                                  "cleared":  "Bildirim thread\u0027i temizlendi. Etkin hedef: {target}.",
+                                  "already_cleared":  "Yapılandırılmış bir bildirim thread\u0027i yok.",
+                                  "not_in_thread":  "Bildirimleri bu thread\u0027e bağlamak için bu komutu bir thread içinde çalıştırın."
+                              },
+                   "role":  {
+                                "updated":  "Rol etiketi {role} olarak ayarlandı.",
+                                "already":  "Rol etiketi zaten {role}.",
+                                "cleared":  "Rol etiketi temizlendi.",
+                                "already_cleared":  "Yapılandırılmış bir rol etiketi yok."
+                            },
+                   "images":  {
+                                  "current":  "Görseller şu anda {value}.",
+                                  "updated":  "Görseller artık {value}.",
+                                  "already":  "Görseller zaten {value}.",
+                                  "invalid":  "`/assets images on` veya `/assets images off` kullanın."
+                              },
+                   "settings":  {
+                                    "header":  "## Sunucu asset ayarları",
+                                    "not_configured":  "Bu sunucu için henüz bir yapılandırma oluşturulmadı.",
+                                    "hint":  "Bu sunucuyu yapılandırmak için `/assets sub`, `/assets set-channel` veya `/assets set-thread` kullanın.",
+                                    "enabled":  "Durum: {value}",
+                                    "channel":  "Kanal: {value}",
+                                    "thread":  "Thread: {value}",
+                                    "role":  "Rol etiketi: {value}",
+                                    "locale":  "Dil: {locale_name} ({locale_code})",
+                                    "images":  "Görseller: {value}",
+                                    "next_check":  "Sonraki kontrol: {value}",
+                                    "no_next_check":  "henüz planlanmadı",
+                                    "dm_not_configured":  "Henüz bir DM profiliniz yok.",
+                                    "dm_header":  "## DM asset ayarları",
+                                    "dm_status":  "Durum: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "Sunucu yapılandırması bulunamadı. Önce bir kanal ayarlayın veya güncellemeleri etkinleştirin.",
+                                "target_missing":  "Yapılandırılmış bildirim hedefi çözümlenemedi.",
+                                "body":  "Bu, **{guild_name}** için bir test bildirimidir.",
+                                "sent":  "Test bildirimi {target} hedefine gönderildi.",
+                                "failed":  "Test bildirimi gönderilemedi: {error}",
+                                "missing_permissions":  "Hedefte eksik izinler var: {permissions}."
+                            }
+               }
 }

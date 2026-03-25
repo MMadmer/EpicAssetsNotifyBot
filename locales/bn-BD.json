@@ -1,4 +1,4 @@
-{
+﻿{
   "meta": {
     "code": "bn-BD",
     "name": "বাংলা"
@@ -49,8 +49,14 @@
   "assets": {
     "untitled": "নামহীন"
   },
+  "common": {
+    "enabled": "চালু",
+    "disabled": "বন্ধ"
+  },
   "errors": {
-    "permission_denied": "এই কমান্ড চালানোর অনুমতি আপনার নেই।"
+    "permission_denied": "এই কমান্ড চালানোর অনুমতি আপনার নেই।",
+    "guild_only": "এই কমান্ডটি শুধু সার্ভারে ব্যবহার করা যায়।",
+    "invalid_arguments": "কমান্ডের আর্গুমেন্ট সঠিক নয়।"
   },
   "subscribe": {
     "dm": {
@@ -76,6 +82,68 @@
     "no_schedule": "পরবর্তী পরীক্ষা এখনো নির্ধারিত হয়নি।",
     "delete_hint": "-# এই বার্তাটি {delete_after} সেকেন্ড পরে মুছে ফেলা হবে"
   },
+  "server": {
+    "target": {
+      "none": "সেট করা নেই",
+      "channel": "<#{channel_id}>",
+      "thread": "<#{thread_id}>"
+    },
+    "enable": {
+      "success": "অ্যাসেট আপডেট এখন {target}-এর জন্য চালু আছে।",
+      "already": "অ্যাসেট আপডেট আগে থেকেই {target}-এর জন্য চালু আছে।"
+    },
+    "disable": {
+      "success": "এই সার্ভারের জন্য অ্যাসেট আপডেট বন্ধ করা হয়েছে।",
+      "already": "অ্যাসেট আপডেট আগেই বন্ধ আছে।"
+    },
+    "channel": {
+      "updated": "নোটিফিকেশন চ্যানেল {target} সেট করা হয়েছে।",
+      "already": "নোটিফিকেশন চ্যানেল আগেই {target} আছে।"
+    },
+    "thread": {
+      "updated": "নোটিফিকেশন থ্রেড {target} সেট করা হয়েছে।",
+      "already": "নোটিফিকেশন থ্রেড আগেই {target} আছে।",
+      "cleared": "নোটিফিকেশন থ্রেড সরানো হয়েছে। সক্রিয় গন্তব্য: {target}।",
+      "already_cleared": "কোনও নোটিফিকেশন থ্রেড সেট করা নেই।",
+      "not_in_thread": "নোটিফিকেশন ওই থ্রেডে বাঁধতে এই কমান্ডটি থ্রেডের ভিতরে চালান।"
+    },
+    "role": {
+      "updated": "রোল মেনশন {role} সেট করা হয়েছে।",
+      "already": "রোল মেনশন আগেই {role} আছে।",
+      "cleared": "রোল মেনশন সরানো হয়েছে।",
+      "already_cleared": "কোনও রোল মেনশন সেট করা নেই।"
+    },
+    "images": {
+      "current": "ছবিগুলো বর্তমানে {value} আছে।",
+      "updated": "ছবিগুলো এখন {value}।",
+      "already": "ছবিগুলো আগেই {value} আছে।",
+      "invalid": "`/assets images on` বা `/assets images off` ব্যবহার করুন।"
+    },
+    "settings": {
+      "header": "## সার্ভার অ্যাসেট সেটিংস",
+      "not_configured": "এই সার্ভারের জন্য এখনও কোনো কনফিগারেশন তৈরি হয়নি।",
+      "hint": "এই সার্ভার কনফিগার করতে `/assets sub`, `/assets set-channel` অথবা `/assets set-thread` ব্যবহার করুন।",
+      "enabled": "অবস্থা: {value}",
+      "channel": "চ্যানেল: {value}",
+      "thread": "থ্রেড: {value}",
+      "role": "রোল মেনশন: {value}",
+      "locale": "ভাষা: {locale_name} ({locale_code})",
+      "images": "ছবি: {value}",
+      "next_check": "পরবর্তী চেক: {value}",
+      "no_next_check": "এখনও নির্ধারিত নয়",
+      "dm_not_configured": "আপনার জন্য এখনও কোনো DM প্রোফাইল নেই।",
+      "dm_header": "## ডিএম অ্যাসেট সেটিংস",
+      "dm_status": "অবস্থা: {value}"
+    },
+    "test": {
+      "not_configured": "সার্ভার কনফিগারেশন পাওয়া যায়নি। আগে একটি চ্যানেল সেট করুন বা আপডেট চালু করুন।",
+      "target_missing": "সেট করা নোটিফিকেশন গন্তব্যটি খুঁজে পাওয়া যায়নি।",
+      "body": "এটি **{guild_name}**-এর জন্য একটি টেস্ট নোটিফিকেশন।",
+      "sent": "টেস্ট নোটিফিকেশন {target}-এ পাঠানো হয়েছে।",
+      "failed": "টেস্ট নোটিফিকেশন পাঠানো যায়নি: {error}",
+      "missing_permissions": "টার্গেটে প্রয়োজনীয় পারমিশন নেই: {permissions}।"
+    }
+  },
   "locale": {
     "dm": {
       "changed": "আপনার DM-এ বটের ভাষা এখন {locale_name} ({locale_code})।",
@@ -87,6 +155,11 @@
       "already": "এই চ্যানেলে বটের ভাষা আগে থেকেই {locale_name} ({locale_code})।",
       "current": "এই চ্যানেলের বর্তমান ভাষা: {locale_name} ({locale_code})।",
       "subscription_required": "প্রথমে এই চ্যানেলকে আপডেটের জন্য সাবস্ক্রাইব করুন, তারপর এর ভাষা বদলান।"
+    },
+    "server": {
+      "changed": "এই সার্ভারের ভাষা এখন {locale_name} ({locale_code})।",
+      "already": "এই সার্ভারের ভাষা আগেই {locale_name} ({locale_code})।",
+      "current": "বর্তমান সার্ভার ভাষা: {locale_name} ({locale_code})।"
     },
     "invalid": "অজানা ভাষা: {input_value}।",
     "available": "উপলভ্য ভাষা: {locales}।",

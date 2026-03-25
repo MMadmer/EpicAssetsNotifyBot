@@ -12,6 +12,17 @@ class ChannelSubscription(TypedDict):
     locale: str
 
 
+class GuildConfig(TypedDict):
+    guild_id: int
+    channel_id: int | None
+    thread_id: int | None
+    shown_assets: bool
+    locale: str
+    mention_role_id: int | None
+    enabled: bool
+    include_images: bool
+
+
 class UserProfile(TypedDict):
     id: int
     shown_assets: bool
@@ -48,6 +59,37 @@ class StateNormalizer:
             }
 
         return list(normalized_channels.values())
+
+    def normalize_guild_configs(self, payload: Any) -> list[GuildConfig]:
+        if not isinstance(payload, list):
+            return []
+
+        normalized_configs: dict[int, GuildConfig] = {}
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+
+            guild_id = item.get("guild_id")
+            if not isinstance(guild_id, int):
+                continue
+
+            locale = item.get("locale") if isinstance(item.get("locale"), str) else None
+            channel_id = item.get("channel_id")
+            thread_id = item.get("thread_id")
+            mention_role_id = item.get("mention_role_id")
+
+            normalized_configs[guild_id] = {
+                "guild_id": guild_id,
+                "channel_id": channel_id if isinstance(channel_id, int) else None,
+                "thread_id": thread_id if isinstance(thread_id, int) else None,
+                "shown_assets": bool(item.get("shown_assets", False)),
+                "locale": self.localizer.normalize_locale(locale) or self.base_locale,
+                "mention_role_id": mention_role_id if isinstance(mention_role_id, int) else None,
+                "enabled": bool(item.get("enabled", True)),
+                "include_images": bool(item.get("include_images", True)),
+            }
+
+        return list(normalized_configs.values())
 
     def normalize_user_profiles(self, payload: Any) -> list[UserProfile]:
         if not isinstance(payload, list):

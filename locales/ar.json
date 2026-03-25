@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "ar",
-    "name": "العربية"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "يناير",
-          "2": "فبراير",
-          "3": "مارس",
-          "4": "أبريل",
-          "5": "مايو",
-          "6": "يونيو",
-          "7": "يوليو",
-          "8": "أغسطس",
-          "9": "سبتمبر",
-          "10": "أكتوبر",
-          "11": "نوفمبر",
-          "12": "ديسمبر"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "يناير",
-          "2": "فبراير",
-          "3": "مارس",
-          "4": "أبريل",
-          "5": "مايو",
-          "6": "يونيو",
-          "7": "يوليو",
-          "8": "أغسطس",
-          "9": "سبتمبر",
-          "10": "أكتوبر",
-          "11": "نوفمبر",
-          "12": "ديسمبر"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "حتى {day} {month_name} الساعة {hour}:{minute:02d} {gmt_offset}"
-  },
-  "header": {
-    "with_deadline": "## أصول Epic لشهر {month_name} ({deadline_suffix})\n",
-    "without_deadline": "## أصول Epic لشهر {month_name}\n"
-  },
-  "assets": {
-    "untitled": "بدون عنوان"
-  },
-  "errors": {
-    "permission_denied": "ليست لديك الصلاحيات اللازمة لتنفيذ هذا الأمر."
-  },
-  "subscribe": {
-    "dm": {
-      "already": "أنت مشترك بالفعل.",
-      "success": "تم الاشتراك في تحديثات الأصول."
-    },
-    "channel": {
-      "already": "هذه القناة مشتركة بالفعل.",
-      "success": "تم اشتراك هذه القناة في تحديثات الأصول: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "تم إلغاء الاشتراك في تحديثات الأصول.",
-    "dm": {
-      "not_subscribed": "ليس لديك اشتراك نشط."
-    },
-    "channel": {
-      "not_subscribed": "هذه القناة غير مشتركة."
-    }
-  },
-  "time": {
-    "remaining": "الوقت المتبقي حتى الفحص التالي: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "لم يتم تحديد الفحص التالي بعد.",
-    "delete_hint": "-# ستُحذف هذه الرسالة بعد {delete_after} ثانية"
-  },
-  "locale": {
-    "dm": {
-      "changed": "تم تغيير لغة البوت في الرسائل الخاصة إلى {locale_name} ({locale_code}).",
-      "already": "لغة البوت في الرسائل الخاصة مضبوطة بالفعل على {locale_name} ({locale_code}).",
-      "current": "اللغة الحالية في الرسائل الخاصة: {locale_name} ({locale_code})."
-    },
-    "channel": {
-      "changed": "تم تغيير لغة البوت في هذه القناة إلى {locale_name} ({locale_code}).",
-      "already": "لغة البوت في هذه القناة مضبوطة بالفعل على {locale_name} ({locale_code}).",
-      "current": "اللغة الحالية لهذه القناة: {locale_name} ({locale_code}).",
-      "subscription_required": "اشترك في تحديثات هذه القناة أولاً، ثم غيّر لغتها."
-    },
-    "invalid": "لغة غير معروفة: {input_value}.",
-    "available": "اللغات المتاحة: {locales}.",
-    "usage": "استخدم `{command}`."
-  }
+﻿{
+    "meta":  {
+                 "code":  "ar",
+                 "name":  "العربية"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "يناير",
+                                                                    "2":  "فبراير",
+                                                                    "3":  "مارس",
+                                                                    "4":  "أبريل",
+                                                                    "5":  "مايو",
+                                                                    "6":  "يونيو",
+                                                                    "7":  "يوليو",
+                                                                    "8":  "أغسطس",
+                                                                    "9":  "سبتمبر",
+                                                                    "10":  "أكتوبر",
+                                                                    "11":  "نوفمبر",
+                                                                    "12":  "ديسمبر"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "يناير",
+                                                                "2":  "فبراير",
+                                                                "3":  "مارس",
+                                                                "4":  "أبريل",
+                                                                "5":  "مايو",
+                                                                "6":  "يونيو",
+                                                                "7":  "يوليو",
+                                                                "8":  "أغسطس",
+                                                                "9":  "سبتمبر",
+                                                                "10":  "أكتوبر",
+                                                                "11":  "نوفمبر",
+                                                                "12":  "ديسمبر"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "حتى {day} {month_name} الساعة {hour}:{minute:02d} {gmt_offset}"
+                 },
+    "header":  {
+                   "with_deadline":  "## أصول Epic لشهر {month_name} ({deadline_suffix})\n",
+                   "without_deadline":  "## أصول Epic لشهر {month_name}\n"
+               },
+    "assets":  {
+                   "untitled":  "بدون عنوان"
+               },
+    "errors":  {
+                   "permission_denied":  "ليست لديك الصلاحيات اللازمة لتنفيذ هذا الأمر.",
+                   "guild_only":  "لا يمكن استخدام هذا الأمر إلا داخل خادم.",
+                   "invalid_arguments":  "وسيطات الأمر غير صالحة."
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "أنت مشترك بالفعل.",
+                                 "success":  "تم الاشتراك في تحديثات الأصول."
+                             },
+                      "channel":  {
+                                      "already":  "هذه القناة مشتركة بالفعل.",
+                                      "success":  "تم اشتراك هذه القناة في تحديثات الأصول: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "تم إلغاء الاشتراك في تحديثات الأصول.",
+                        "dm":  {
+                                   "not_subscribed":  "ليس لديك اشتراك نشط."
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "هذه القناة غير مشتركة."
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "الوقت المتبقي حتى الفحص التالي: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "لم يتم تحديد الفحص التالي بعد.",
+                 "delete_hint":  "-# ستُحذف هذه الرسالة بعد {delete_after} ثانية"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "تم تغيير لغة البوت في الرسائل الخاصة إلى {locale_name} ({locale_code}).",
+                              "already":  "لغة البوت في الرسائل الخاصة مضبوطة بالفعل على {locale_name} ({locale_code}).",
+                              "current":  "اللغة الحالية في الرسائل الخاصة: {locale_name} ({locale_code})."
+                          },
+                   "channel":  {
+                                   "changed":  "تم تغيير لغة البوت في هذه القناة إلى {locale_name} ({locale_code}).",
+                                   "already":  "لغة البوت في هذه القناة مضبوطة بالفعل على {locale_name} ({locale_code}).",
+                                   "current":  "اللغة الحالية لهذه القناة: {locale_name} ({locale_code}).",
+                                   "subscription_required":  "اشترك في تحديثات هذه القناة أولاً، ثم غيّر لغتها."
+                               },
+                   "invalid":  "لغة غير معروفة: {input_value}.",
+                   "available":  "اللغات المتاحة: {locales}.",
+                   "usage":  "استخدم `{command}`.",
+                   "server":  {
+                                  "changed":  "لغة هذا الخادم الآن هي {locale_name} ({locale_code}).",
+                                  "already":  "لغة هذا الخادم هي بالفعل {locale_name} ({locale_code}).",
+                                  "current":  "لغة الخادم الحالية: {locale_name} ({locale_code})."
+                              }
+               },
+    "common":  {
+                   "enabled":  "مفعلة",
+                   "disabled":  "معطلة"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "غير مضبوط",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "تم تفعيل تحديثات الأصول لـ {target}.",
+                                  "already":  "تحديثات الأصول مفعلة بالفعل لـ {target}."
+                              },
+                   "disable":  {
+                                   "success":  "تم تعطيل تحديثات الأصول لهذا الخادم.",
+                                   "already":  "تحديثات الأصول معطلة بالفعل."
+                               },
+                   "channel":  {
+                                   "updated":  "تم تعيين قناة الإشعارات إلى {target}.",
+                                   "already":  "قناة الإشعارات مضبوطة بالفعل على {target}."
+                               },
+                   "thread":  {
+                                  "updated":  "تم تعيين ثريد الإشعارات إلى {target}.",
+                                  "already":  "ثريد الإشعارات مضبوط بالفعل على {target}.",
+                                  "cleared":  "تمت إزالة ثريد الإشعارات. الوجهة النشطة: {target}.",
+                                  "already_cleared":  "لا يوجد ثريد إشعارات مضبوط.",
+                                  "not_in_thread":  "شغّل هذا الأمر داخل ثريد لربط الإشعارات به."
+                              },
+                   "role":  {
+                                "updated":  "تم تعيين منشن الرتبة إلى {role}.",
+                                "already":  "منشن الرتبة مضبوط بالفعل على {role}.",
+                                "cleared":  "تمت إزالة منشن الرتبة.",
+                                "already_cleared":  "لا يوجد منشن رتبة مضبوط."
+                            },
+                   "images":  {
+                                  "current":  "الصور حالياً {value}.",
+                                  "updated":  "الصور الآن {value}.",
+                                  "already":  "الصور بالفعل {value}.",
+                                  "invalid":  "استخدم `/assets images on` أو `/assets images off`."
+                              },
+                   "settings":  {
+                                    "header":  "## إعدادات الأصول في الخادم",
+                                    "not_configured":  "لم يتم إنشاء إعدادات لهذا الخادم بعد.",
+                                    "hint":  "استخدم `/assets sub` أو `/assets set-channel` أو `/assets set-thread` لإعداد هذا الخادم.",
+                                    "enabled":  "الحالة: {value}",
+                                    "channel":  "القناة: {value}",
+                                    "thread":  "الثريد: {value}",
+                                    "role":  "منشن الرتبة: {value}",
+                                    "locale":  "اللغة: {locale_name} ({locale_code})",
+                                    "images":  "الصور: {value}",
+                                    "next_check":  "التحقق التالي: {value}",
+                                    "no_next_check":  "لم يتم جدولتها بعد",
+                                    "dm_not_configured":  "ليس لديك إعدادات للرسائل الخاصة بعد.",
+                                    "dm_header":  "## إعدادات الأصول في الرسائل الخاصة",
+                                    "dm_status":  "الحالة: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "لم يتم العثور على إعدادات للخادم. عيّن قناة أو فعّل التحديثات أولاً.",
+                                "target_missing":  "تعذر العثور على الوجهة المضبوطة للإشعارات.",
+                                "body":  "هذا إشعار اختباري لـ **{guild_name}**.",
+                                "sent":  "تم إرسال إشعار الاختبار إلى {target}.",
+                                "failed":  "فشل إرسال إشعار الاختبار: {error}",
+                                "missing_permissions":  "الأذونات المفقودة على الوجهة: {permissions}."
+                            }
+               }
 }

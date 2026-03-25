@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "zh-CN",
-    "name": "简体中文"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "1月",
-          "2": "2月",
-          "3": "3月",
-          "4": "4月",
-          "5": "5月",
-          "6": "6月",
-          "7": "7月",
-          "8": "8月",
-          "9": "9月",
-          "10": "10月",
-          "11": "11月",
-          "12": "12月"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "1月",
-          "2": "2月",
-          "3": "3月",
-          "4": "4月",
-          "5": "5月",
-          "6": "6月",
-          "7": "7月",
-          "8": "8月",
-          "9": "9月",
-          "10": "10月",
-          "11": "11月",
-          "12": "12月"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "截止 {month_name}{day}日 {hour}:{minute:02d} {gmt_offset}"
-  },
-  "header": {
-    "with_deadline": "## Epic 的 {month_name}资产（{deadline_suffix}）\n",
-    "without_deadline": "## Epic 的 {month_name}资产\n"
-  },
-  "assets": {
-    "untitled": "未命名"
-  },
-  "errors": {
-    "permission_denied": "您没有执行此命令所需的权限。"
-  },
-  "subscribe": {
-    "dm": {
-      "already": "您已订阅。",
-      "success": "已订阅资产更新。"
-    },
-    "channel": {
-      "already": "此频道已订阅。",
-      "success": "已为此频道订阅资产更新：{channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "已取消订阅资产更新。",
-    "dm": {
-      "not_subscribed": "您尚未订阅。"
-    },
-    "channel": {
-      "not_subscribed": "此频道尚未订阅。"
-    }
-  },
-  "time": {
-    "remaining": "距离下次检查还有：{hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "尚未安排下一次检查。",
-    "delete_hint": "-# 此消息将在 {delete_after} 秒后删除"
-  },
-  "locale": {
-    "dm": {
-      "changed": "私信中的机器人语言已切换为 {locale_name} ({locale_code})。",
-      "already": "私信中的机器人语言已是 {locale_name} ({locale_code})。",
-      "current": "当前私信语言：{locale_name} ({locale_code})。"
-    },
-    "channel": {
-      "changed": "此频道中的机器人语言已切换为 {locale_name} ({locale_code})。",
-      "already": "此频道中的机器人语言已是 {locale_name} ({locale_code})。",
-      "current": "当前频道语言：{locale_name} ({locale_code})。",
-      "subscription_required": "请先为此频道订阅更新，然后再修改频道语言。"
-    },
-    "invalid": "未知语言：{input_value}。",
-    "available": "可用语言：{locales}。",
-    "usage": "请使用 `{command}`。"
-  }
+﻿{
+    "meta":  {
+                 "code":  "zh-CN",
+                 "name":  "简体中文"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "1月",
+                                                                    "2":  "2月",
+                                                                    "3":  "3月",
+                                                                    "4":  "4月",
+                                                                    "5":  "5月",
+                                                                    "6":  "6月",
+                                                                    "7":  "7月",
+                                                                    "8":  "8月",
+                                                                    "9":  "9月",
+                                                                    "10":  "10月",
+                                                                    "11":  "11月",
+                                                                    "12":  "12月"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "1月",
+                                                                "2":  "2月",
+                                                                "3":  "3月",
+                                                                "4":  "4月",
+                                                                "5":  "5月",
+                                                                "6":  "6月",
+                                                                "7":  "7月",
+                                                                "8":  "8月",
+                                                                "9":  "9月",
+                                                                "10":  "10月",
+                                                                "11":  "11月",
+                                                                "12":  "12月"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "截止 {month_name}{day}日 {hour}:{minute:02d} {gmt_offset}"
+                 },
+    "header":  {
+                   "with_deadline":  "## Epic 的 {month_name}资产（{deadline_suffix}）\n",
+                   "without_deadline":  "## Epic 的 {month_name}资产\n"
+               },
+    "assets":  {
+                   "untitled":  "未命名"
+               },
+    "errors":  {
+                   "permission_denied":  "您没有执行此命令所需的权限。",
+                   "guild_only":  "此命令只能在服务器中使用。",
+                   "invalid_arguments":  "命令参数无效。"
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "您已订阅。",
+                                 "success":  "已订阅资产更新。"
+                             },
+                      "channel":  {
+                                      "already":  "此频道已订阅。",
+                                      "success":  "已为此频道订阅资产更新：{channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "已取消订阅资产更新。",
+                        "dm":  {
+                                   "not_subscribed":  "您尚未订阅。"
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "此频道尚未订阅。"
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "距离下次检查还有：{hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "尚未安排下一次检查。",
+                 "delete_hint":  "-# 此消息将在 {delete_after} 秒后删除"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "私信中的机器人语言已切换为 {locale_name} ({locale_code})。",
+                              "already":  "私信中的机器人语言已是 {locale_name} ({locale_code})。",
+                              "current":  "当前私信语言：{locale_name} ({locale_code})。"
+                          },
+                   "channel":  {
+                                   "changed":  "此频道中的机器人语言已切换为 {locale_name} ({locale_code})。",
+                                   "already":  "此频道中的机器人语言已是 {locale_name} ({locale_code})。",
+                                   "current":  "当前频道语言：{locale_name} ({locale_code})。",
+                                   "subscription_required":  "请先为此频道订阅更新，然后再修改频道语言。"
+                               },
+                   "invalid":  "未知语言：{input_value}。",
+                   "available":  "可用语言：{locales}。",
+                   "usage":  "请使用 `{command}`。",
+                   "server":  {
+                                  "changed":  "此服务器的语言现已设置为 {locale_name} ({locale_code})。",
+                                  "already":  "此服务器的语言已经是 {locale_name} ({locale_code})。",
+                                  "current":  "当前服务器语言：{locale_name} ({locale_code})。"
+                              }
+               },
+    "common":  {
+                   "enabled":  "开启",
+                   "disabled":  "关闭"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "未设置",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "已为 {target} 启用资产更新。",
+                                  "already":  "{target} 的资产更新已启用。"
+                              },
+                   "disable":  {
+                                   "success":  "已为此服务器禁用资产更新。",
+                                   "already":  "资产更新已处于禁用状态。"
+                               },
+                   "channel":  {
+                                   "updated":  "通知频道已设置为 {target}。",
+                                   "already":  "通知频道已经是 {target}。"
+                               },
+                   "thread":  {
+                                  "updated":  "通知主题帖已设置为 {target}。",
+                                  "already":  "通知主题帖已经是 {target}。",
+                                  "cleared":  "通知主题帖已清除。当前目标：{target}。",
+                                  "already_cleared":  "尚未配置通知主题帖。",
+                                  "not_in_thread":  "请在主题帖内运行此命令，以将通知绑定到该主题帖。"
+                              },
+                   "role":  {
+                                "updated":  "身份组提及已设置为 {role}。",
+                                "already":  "身份组提及已经是 {role}。",
+                                "cleared":  "身份组提及已清除。",
+                                "already_cleared":  "尚未配置身份组提及。"
+                            },
+                   "images":  {
+                                  "current":  "图片当前为{value}。",
+                                  "updated":  "图片现已{value}。",
+                                  "already":  "图片已经{value}。",
+                                  "invalid":  "请使用 `/assets images on` 或 `/assets images off`。"
+                              },
+                   "settings":  {
+                                    "header":  "## 服务器资产设置",
+                                    "not_configured":  "此服务器尚未创建配置。",
+                                    "hint":  "请使用 `/assets sub`、`/assets set-channel` 或 `/assets set-thread` 来配置此服务器。",
+                                    "enabled":  "状态：{value}",
+                                    "channel":  "频道：{value}",
+                                    "thread":  "主题帖：{value}",
+                                    "role":  "身份组提及：{value}",
+                                    "locale":  "语言：{locale_name} ({locale_code})",
+                                    "images":  "图片：{value}",
+                                    "next_check":  "下次检查：{value}",
+                                    "no_next_check":  "尚未计划",
+                                    "dm_not_configured":  "你还没有 DM 配置。",
+                                    "dm_header":  "## DM 资产设置",
+                                    "dm_status":  "状态：{value}"
+                                },
+                   "test":  {
+                                "not_configured":  "未找到服务器配置。请先设置频道或启用更新。",
+                                "target_missing":  "无法解析已配置的通知目标。",
+                                "body":  "这是一条发给 **{guild_name}** 的测试通知。",
+                                "sent":  "测试通知已发送到 {target}。",
+                                "failed":  "发送测试通知失败：{error}",
+                                "missing_permissions":  "目标缺少权限：{permissions}。"
+                            }
+               }
 }

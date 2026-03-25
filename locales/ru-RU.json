@@ -49,8 +49,14 @@
   "assets": {
     "untitled": "Без названия"
   },
+  "common": {
+    "enabled": "включено",
+    "disabled": "выключено"
+  },
   "errors": {
-    "permission_denied": "У вас нет прав для выполнения этой команды."
+    "permission_denied": "У вас нет прав для выполнения этой команды.",
+    "guild_only": "Эту команду можно использовать только на сервере.",
+    "invalid_arguments": "Некорректные аргументы команды."
   },
   "subscribe": {
     "dm": {
@@ -58,17 +64,17 @@
       "success": "Подписка на обновления ассетов оформлена."
     },
     "channel": {
-      "already": "Этот канал уже подписан.",
-      "success": "Канал подписан на обновления ассетов: {channel_name}"
+      "already": "Для этого сервера уже включены уведомления с таким target.",
+      "success": "Уведомления об ассетах включены для target: {channel_name}"
     }
   },
   "unsubscribe": {
-    "success": "Подписка на обновления ассетов отменена.",
+    "success": "Уведомления об ассетах для сервера отключены.",
     "dm": {
       "not_subscribed": "У вас нет активной подписки."
     },
     "channel": {
-      "not_subscribed": "Этот канал не подписан."
+      "not_subscribed": "На этом сервере нет активных уведомлений об ассетах."
     }
   },
   "time": {
@@ -76,17 +82,78 @@
     "no_schedule": "Следующая проверка пока не запланирована.",
     "delete_hint": "-# Это сообщение будет удалено через {delete_after} секунд"
   },
+  "server": {
+    "target": {
+      "none": "не задан",
+      "channel": "<#{channel_id}>",
+      "thread": "<#{thread_id}>"
+    },
+    "enable": {
+      "success": "Уведомления об ассетах включены для {target}.",
+      "already": "Уведомления об ассетах уже включены для {target}."
+    },
+    "disable": {
+      "success": "Уведомления об ассетах для этого сервера отключены.",
+      "already": "Уведомления об ассетах уже отключены."
+    },
+    "channel": {
+      "updated": "Канал уведомлений установлен: {target}.",
+      "already": "Канал уведомлений уже установлен: {target}."
+    },
+    "thread": {
+      "updated": "Тред уведомлений установлен: {target}.",
+      "already": "Тред уведомлений уже установлен: {target}.",
+      "cleared": "Тред уведомлений очищен. Активный target: {target}.",
+      "already_cleared": "Тред уведомлений не настроен.",
+      "not_in_thread": "Запустите эту команду внутри треда, чтобы привязать уведомления к нему."
+    },
+    "role": {
+      "updated": "Роль для пинга установлена: {role}.",
+      "already": "Роль для пинга уже установлена: {role}.",
+      "cleared": "Роль для пинга очищена.",
+      "already_cleared": "Роль для пинга не настроена."
+    },
+    "images": {
+      "current": "Изображения сейчас: {value}.",
+      "updated": "Изображения теперь: {value}.",
+      "already": "Изображения уже: {value}.",
+      "invalid": "Используйте `/assets images on` или `/assets images off`."
+    },
+    "settings": {
+      "header": "## Настройки уведомлений сервера",
+      "not_configured": "Конфигурация сервера еще не создана.",
+      "hint": "Используйте `/assets sub`, `/assets set-channel` или `/assets set-thread`, чтобы настроить сервер.",
+      "enabled": "Статус: {value}",
+      "channel": "Канал: {value}",
+      "thread": "Тред: {value}",
+      "role": "Роль для пинга: {value}",
+      "locale": "Язык: {locale_name} ({locale_code})",
+      "images": "Изображения: {value}",
+      "next_check": "Следующая проверка: {value}",
+      "no_next_check": "еще не запланирована",
+      "dm_not_configured": "Ваш DM-профиль еще не создан.",
+      "dm_header": "## Настройки ассетов в личке",
+      "dm_status": "Статус: {value}"
+    },
+    "test": {
+      "not_configured": "Конфигурация сервера не найдена. Сначала задайте канал или включите уведомления.",
+      "target_missing": "Не удалось найти настроенный target для уведомлений.",
+      "body": "Это тестовое уведомление для **{guild_name}**.",
+      "sent": "Тестовое уведомление отправлено в {target}.",
+      "failed": "Не удалось отправить тестовое уведомление: {error}",
+      "missing_permissions": "На target не хватает прав: {permissions}."
+    }
+  },
   "locale": {
     "dm": {
       "changed": "Язык бота в личке изменен на {locale_name} ({locale_code}).",
       "already": "Язык бота в личке уже установлен на {locale_name} ({locale_code}).",
       "current": "Текущий язык бота в личке: {locale_name} ({locale_code})."
     },
-    "channel": {
-      "changed": "Язык бота в этом канале изменен на {locale_name} ({locale_code}).",
-      "already": "Язык бота в этом канале уже установлен на {locale_name} ({locale_code}).",
-      "current": "Текущий язык бота в этом канале: {locale_name} ({locale_code}).",
-      "subscription_required": "Сначала подпишите этот канал на обновления, затем меняйте его язык."
+    "server": {
+      "changed": "Язык бота для этого сервера изменен на {locale_name} ({locale_code}).",
+      "already": "Язык бота для этого сервера уже установлен на {locale_name} ({locale_code}).",
+      "current": "Текущий язык бота для этого сервера: {locale_name} ({locale_code})."
     },
     "invalid": "Неизвестный язык: {input_value}.",
     "available": "Доступные языки: {locales}.",

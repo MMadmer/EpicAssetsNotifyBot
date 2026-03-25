@@ -1,4 +1,4 @@
-{
+﻿{
   "meta": {
     "code": "az-AZ",
     "name": "Azərbaycanca"
@@ -49,8 +49,14 @@
   "assets": {
     "untitled": "Adsız"
   },
+  "common": {
+    "enabled": "aktiv",
+    "disabled": "deaktiv"
+  },
   "errors": {
-    "permission_denied": "Bu əmri icra etmək üçün lazımi icazəniz yoxdur."
+    "permission_denied": "Bu əmri icra etmək üçün lazımi icazəniz yoxdur.",
+    "guild_only": "Bu əmr yalnız serverdə istifadə oluna bilər.",
+    "invalid_arguments": "Əmr arqumentləri yanlışdır."
   },
   "subscribe": {
     "dm": {
@@ -76,6 +82,68 @@
     "no_schedule": "Hələ növbəti yoxlama planlaşdırılmayıb.",
     "delete_hint": "-# Bu mesaj {delete_after} saniyədən sonra silinəcək"
   },
+  "server": {
+    "target": {
+      "none": "təyin edilməyib",
+      "channel": "<#{channel_id}>",
+      "thread": "<#{thread_id}>"
+    },
+    "enable": {
+      "success": "Asset yeniləmələri {target} üçün aktivdir.",
+      "already": "Asset yeniləmələri artıq {target} üçün aktivdir."
+    },
+    "disable": {
+      "success": "Bu server üçün asset yeniləmələri deaktiv edildi.",
+      "already": "Asset yeniləmələri artıq deaktivdir."
+    },
+    "channel": {
+      "updated": "Bildiriş kanalı {target} olaraq təyin edildi.",
+      "already": "Bildiriş kanalı artıq {target}-dir."
+    },
+    "thread": {
+      "updated": "Bildiriş thread-i {target} olaraq təyin edildi.",
+      "already": "Bildiriş thread-i artıq {target}-dir.",
+      "cleared": "Bildiriş thread-i təmizləndi. Aktiv hədəf: {target}.",
+      "already_cleared": "Heç bir bildiriş thread-i qurulmayıb.",
+      "not_in_thread": "Bildirişləri həmin thread-ə bağlamaq üçün bu əmri thread daxilində işlədin."
+    },
+    "role": {
+      "updated": "Rol mention-u {role} olaraq təyin edildi.",
+      "already": "Rol mention-u artıq {role}-dur.",
+      "cleared": "Rol mention-u təmizləndi.",
+      "already_cleared": "Heç bir rol mention-u qurulmayıb."
+    },
+    "images": {
+      "current": "Şəkillər hazırda {value} vəziyyətindədir.",
+      "updated": "Şəkillər indi {value} vəziyyətindədir.",
+      "already": "Şəkillər artıq {value} vəziyyətindədir.",
+      "invalid": "`/assets images on` və ya `/assets images off` istifadə edin."
+    },
+    "settings": {
+      "header": "## Server asset ayarları",
+      "not_configured": "Bu server üçün hələ konfiqurasiya yaradılmayıb.",
+      "hint": "Bu serveri qurmaq üçün `/assets sub`, `/assets set-channel` və ya `/assets set-thread` istifadə edin.",
+      "enabled": "Vəziyyət: {value}",
+      "channel": "Kanal: {value}",
+      "thread": "Thread: {value}",
+      "role": "Rol mention-u: {value}",
+      "locale": "Dil: {locale_name} ({locale_code})",
+      "images": "Şəkillər: {value}",
+      "next_check": "Növbəti yoxlama: {value}",
+      "no_next_check": "hələ planlaşdırılmayıb",
+      "dm_not_configured": "Sizin üçün hələ DM profili yaradılmayıb.",
+      "dm_header": "## DM asset ayarları",
+      "dm_status": "Vəziyyət: {value}"
+    },
+    "test": {
+      "not_configured": "Server konfiqurasiyası tapılmadı. Əvvəlcə kanal təyin edin və ya yeniləmələri aktiv edin.",
+      "target_missing": "Qurulmuş bildiriş hədəfi tapılmadı.",
+      "body": "Bu, **{guild_name}** üçün test bildirişidir.",
+      "sent": "Test bildirişi {target} ünvanına göndərildi.",
+      "failed": "Test bildirişi göndərilə bilmədi: {error}",
+      "missing_permissions": "Hədəfdə çatışmayan icazələr: {permissions}."
+    }
+  },
   "locale": {
     "dm": {
       "changed": "Şəxsi mesajlarda bot dili indi {locale_name} ({locale_code}) oldu.",
@@ -87,6 +155,11 @@
       "already": "Bu kanalda bot dili artıq {locale_name} ({locale_code}) olaraq qurulub.",
       "current": "Bu kanalın cari dili: {locale_name} ({locale_code}).",
       "subscription_required": "Əvvəlcə bu kanalı yeniləmələrə abunə edin, sonra dilini dəyişin."
+    },
+    "server": {
+      "changed": "Bu serverin dili indi {locale_name} ({locale_code})-dir.",
+      "already": "Bu serverin dili artıq {locale_name} ({locale_code})-dir.",
+      "current": "Serverin cari dili: {locale_name} ({locale_code})."
     },
     "invalid": "Naməlum dil: {input_value}.",
     "available": "Mövcud dillər: {locales}.",

@@ -1,95 +1,168 @@
-{
-  "meta": {
-    "code": "uk-UA",
-    "name": "Українська"
-  },
-  "calendar": {
-    "months": {
-      "standalone": {
-        "wide": {
-          "1": "січень",
-          "2": "лютий",
-          "3": "березень",
-          "4": "квітень",
-          "5": "травень",
-          "6": "червень",
-          "7": "липень",
-          "8": "серпень",
-          "9": "вересень",
-          "10": "жовтень",
-          "11": "листопад",
-          "12": "грудень"
-        }
-      },
-      "format": {
-        "wide": {
-          "1": "січня",
-          "2": "лютого",
-          "3": "березня",
-          "4": "квітня",
-          "5": "травня",
-          "6": "червня",
-          "7": "липня",
-          "8": "серпня",
-          "9": "вересня",
-          "10": "жовтня",
-          "11": "листопада",
-          "12": "грудня"
-        }
-      }
-    }
-  },
-  "deadline": {
-    "until": "до {day} {month_name} {hour}:{minute:02d} {gmt_offset}"
-  },
-  "header": {
-    "with_deadline": "## Epic-асети за {month_name} ({deadline_suffix})\n",
-    "without_deadline": "## Epic-асети за {month_name}\n"
-  },
-  "assets": {
-    "untitled": "Без назви"
-  },
-  "errors": {
-    "permission_denied": "У вас немає прав для виконання цієї команди."
-  },
-  "subscribe": {
-    "dm": {
-      "already": "Ви вже підписані.",
-      "success": "Підписку на оновлення асетів оформлено."
-    },
-    "channel": {
-      "already": "Цей канал уже підписано.",
-      "success": "Канал підписано на оновлення асетів: {channel_name}"
-    }
-  },
-  "unsubscribe": {
-    "success": "Підписку на оновлення асетів скасовано.",
-    "dm": {
-      "not_subscribed": "У вас немає активної підписки."
-    },
-    "channel": {
-      "not_subscribed": "Цей канал не підписано."
-    }
-  },
-  "time": {
-    "remaining": "Час до наступної перевірки: {hours:02}:{minutes:02}:{seconds:02}",
-    "no_schedule": "Наступну перевірку ще не заплановано.",
-    "delete_hint": "-# Це повідомлення буде видалено через {delete_after} секунд"
-  },
-  "locale": {
-    "dm": {
-      "changed": "Мову бота в особистих повідомленнях змінено на {locale_name} ({locale_code}).",
-      "already": "Мову бота в особистих повідомленнях уже встановлено як {locale_name} ({locale_code}).",
-      "current": "Поточна мова в особистих повідомленнях: {locale_name} ({locale_code})."
-    },
-    "channel": {
-      "changed": "Мову бота в цьому каналі змінено на {locale_name} ({locale_code}).",
-      "already": "Мову бота в цьому каналі вже встановлено як {locale_name} ({locale_code}).",
-      "current": "Поточна мова бота в цьому каналі: {locale_name} ({locale_code}).",
-      "subscription_required": "Спочатку підпишіть цей канал на оновлення, а потім змінюйте його мову."
-    },
-    "invalid": "Невідома мова: {input_value}.",
-    "available": "Доступні мови: {locales}.",
-    "usage": "Використовуйте `{command}`."
-  }
+﻿{
+    "meta":  {
+                 "code":  "uk-UA",
+                 "name":  "Українська"
+             },
+    "calendar":  {
+                     "months":  {
+                                    "standalone":  {
+                                                       "wide":  {
+                                                                    "1":  "січень",
+                                                                    "2":  "лютий",
+                                                                    "3":  "березень",
+                                                                    "4":  "квітень",
+                                                                    "5":  "травень",
+                                                                    "6":  "червень",
+                                                                    "7":  "липень",
+                                                                    "8":  "серпень",
+                                                                    "9":  "вересень",
+                                                                    "10":  "жовтень",
+                                                                    "11":  "листопад",
+                                                                    "12":  "грудень"
+                                                                }
+                                                   },
+                                    "format":  {
+                                                   "wide":  {
+                                                                "1":  "січня",
+                                                                "2":  "лютого",
+                                                                "3":  "березня",
+                                                                "4":  "квітня",
+                                                                "5":  "травня",
+                                                                "6":  "червня",
+                                                                "7":  "липня",
+                                                                "8":  "серпня",
+                                                                "9":  "вересня",
+                                                                "10":  "жовтня",
+                                                                "11":  "листопада",
+                                                                "12":  "грудня"
+                                                            }
+                                               }
+                                }
+                 },
+    "deadline":  {
+                     "until":  "до {day} {month_name} {hour}:{minute:02d} {gmt_offset}"
+                 },
+    "header":  {
+                   "with_deadline":  "## Epic-асети за {month_name} ({deadline_suffix})\n",
+                   "without_deadline":  "## Epic-асети за {month_name}\n"
+               },
+    "assets":  {
+                   "untitled":  "Без назви"
+               },
+    "errors":  {
+                   "permission_denied":  "У вас немає прав для виконання цієї команди.",
+                   "guild_only":  "Цю команду можна використовувати лише на сервері.",
+                   "invalid_arguments":  "Неприпустимі аргументи команди."
+               },
+    "subscribe":  {
+                      "dm":  {
+                                 "already":  "Ви вже підписані.",
+                                 "success":  "Підписку на оновлення асетів оформлено."
+                             },
+                      "channel":  {
+                                      "already":  "Цей канал уже підписано.",
+                                      "success":  "Канал підписано на оновлення асетів: {channel_name}"
+                                  }
+                  },
+    "unsubscribe":  {
+                        "success":  "Підписку на оновлення асетів скасовано.",
+                        "dm":  {
+                                   "not_subscribed":  "У вас немає активної підписки."
+                               },
+                        "channel":  {
+                                        "not_subscribed":  "Цей канал не підписано."
+                                    }
+                    },
+    "time":  {
+                 "remaining":  "Час до наступної перевірки: {hours:02}:{minutes:02}:{seconds:02}",
+                 "no_schedule":  "Наступну перевірку ще не заплановано.",
+                 "delete_hint":  "-# Це повідомлення буде видалено через {delete_after} секунд"
+             },
+    "locale":  {
+                   "dm":  {
+                              "changed":  "Мову бота в особистих повідомленнях змінено на {locale_name} ({locale_code}).",
+                              "already":  "Мову бота в особистих повідомленнях уже встановлено як {locale_name} ({locale_code}).",
+                              "current":  "Поточна мова в особистих повідомленнях: {locale_name} ({locale_code})."
+                          },
+                   "channel":  {
+                                   "changed":  "Мову бота в цьому каналі змінено на {locale_name} ({locale_code}).",
+                                   "already":  "Мову бота в цьому каналі вже встановлено як {locale_name} ({locale_code}).",
+                                   "current":  "Поточна мова бота в цьому каналі: {locale_name} ({locale_code}).",
+                                   "subscription_required":  "Спочатку підпишіть цей канал на оновлення, а потім змінюйте його мову."
+                               },
+                   "invalid":  "Невідома мова: {input_value}.",
+                   "available":  "Доступні мови: {locales}.",
+                   "usage":  "Використовуйте `{command}`.",
+                   "server":  {
+                                  "changed":  "Мова цього сервера тепер {locale_name} ({locale_code}).",
+                                  "already":  "Мова цього сервера вже {locale_name} ({locale_code}).",
+                                  "current":  "Поточна мова сервера: {locale_name} ({locale_code})."
+                              }
+               },
+    "common":  {
+                   "enabled":  "увімкнено",
+                   "disabled":  "вимкнено"
+               },
+    "server":  {
+                   "target":  {
+                                  "none":  "не налаштовано",
+                                  "channel":  "\u003c#{channel_id}\u003e",
+                                  "thread":  "\u003c#{thread_id}\u003e"
+                              },
+                   "enable":  {
+                                  "success":  "Оновлення assetів увімкнено для {target}.",
+                                  "already":  "Оновлення assetів уже увімкнено для {target}."
+                              },
+                   "disable":  {
+                                   "success":  "Оновлення assetів вимкнено для цього сервера.",
+                                   "already":  "Оновлення assetів уже вимкнено."
+                               },
+                   "channel":  {
+                                   "updated":  "Канал сповіщень встановлено на {target}.",
+                                   "already":  "Канал сповіщень уже встановлено на {target}."
+                               },
+                   "thread":  {
+                                  "updated":  "Тред сповіщень встановлено на {target}.",
+                                  "already":  "Тред сповіщень уже встановлено на {target}.",
+                                  "cleared":  "Тред сповіщень очищено. Активна ціль: {target}.",
+                                  "already_cleared":  "Тред сповіщень не налаштовано.",
+                                  "not_in_thread":  "Запустіть цю команду всередині треду, щоб прив\u0027язати до нього сповіщення."
+                              },
+                   "role":  {
+                                "updated":  "Згадку ролі встановлено на {role}.",
+                                "already":  "Згадку ролі вже встановлено на {role}.",
+                                "cleared":  "Згадку ролі очищено.",
+                                "already_cleared":  "Згадку ролі не налаштовано."
+                            },
+                   "images":  {
+                                  "current":  "Зображення зараз {value}.",
+                                  "updated":  "Зображення тепер {value}.",
+                                  "already":  "Зображення вже {value}.",
+                                  "invalid":  "Використайте `/assets images on` або `/assets images off`."
+                              },
+                   "settings":  {
+                                    "header":  "## Налаштування assetів сервера",
+                                    "not_configured":  "Для цього сервера ще не створено конфігурацію.",
+                                    "hint":  "Використайте `/assets sub`, `/assets set-channel` або `/assets set-thread`, щоб налаштувати цей сервер.",
+                                    "enabled":  "Статус: {value}",
+                                    "channel":  "Канал: {value}",
+                                    "thread":  "Тред: {value}",
+                                    "role":  "Згадка ролі: {value}",
+                                    "locale":  "Мова: {locale_name} ({locale_code})",
+                                    "images":  "Зображення: {value}",
+                                    "next_check":  "Наступна перевірка: {value}",
+                                    "no_next_check":  "ще не заплановано",
+                                    "dm_not_configured":  "У вас ще немає DM-профілю.",
+                                    "dm_header":  "## Налаштування DM assetів",
+                                    "dm_status":  "Статус: {value}"
+                                },
+                   "test":  {
+                                "not_configured":  "Конфігурацію сервера не знайдено. Спочатку встановіть канал або увімкніть оновлення.",
+                                "target_missing":  "Не вдалося знайти налаштовану ціль сповіщень.",
+                                "body":  "Це тестове сповіщення для **{guild_name}**.",
+                                "sent":  "Тестове сповіщення надіслано до {target}.",
+                                "failed":  "Не вдалося надіслати тестове сповіщення: {error}",
+                                "missing_permissions":  "На цілі бракує дозволів: {permissions}."
+                            }
+               }
 }

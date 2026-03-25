@@ -189,6 +189,8 @@ func (s *Store) applyPragmas(ctx context.Context) error {
 	for _, stmt := range []string{
 		`PRAGMA foreign_keys=ON`,
 		`PRAGMA busy_timeout=5000`,
+		`PRAGMA synchronous=NORMAL`,
+		`PRAGMA temp_store=MEMORY`,
 	} {
 		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
 			return err
@@ -574,4 +576,3 @@ func normalizeDatabaseURL(raw string) (string, error) {
 
 	return "file:" + filepath.ToSlash(path), nil
 }
-

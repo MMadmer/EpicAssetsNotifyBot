@@ -16,6 +16,12 @@ import (
 const defaultHomepageURL = "https://www.fab.com/"
 
 var ErrLimitedTimeFreeNotFound = errors.New("fab: limited-time free section not found")
+var sectionTagPattern = regexp.MustCompile(`(?is)<\s*(/?)\s*(section|h2)\b[^>]*>`)
+var listItemPattern = regexp.MustCompile(`(?is)<li\b[^>]*>(.*?)</li>`)
+var anchorPattern = regexp.MustCompile(`(?is)<a\b([^>]*)>(.*?)</a>`)
+var imagePattern = regexp.MustCompile(`(?is)<img\b[^>]*src\s*=\s*["']([^"']+)["'][^>]*>`)
+var attributePattern = regexp.MustCompile(`(?is)\b([a-zA-Z:-]+)\s*=\s*["']([^"']*)["']`)
+var htmlTagPattern = regexp.MustCompile(`(?is)<[^>]+>`)
 
 // HTMLSource returns a rendered HTML document.
 //
@@ -174,6 +180,17 @@ func (s *Scraper) WithRetries(retries int) *Scraper {
 	return s
 }
 
+func (s *Scraper) Close() error {
+	if s == nil {
+		return nil
+	}
+	closer, ok := s.Source.(io.Closer)
+	if !ok {
+		return nil
+	}
+	return closer.Close()
+}
+
 // fetchDocument is the only place that talks to the transport layer.
 // A browser-backed source can be injected through HTMLSource without touching
 // the parser or retry logic.
@@ -224,15 +241,13 @@ func locateFreeSection(document string) (sectionHTML string, headingText string,
 		start int
 	}
 
-	tagPattern := regexp.MustCompile(`(?is)<\s*(/?)\s*(section|h2)\b[^>]*>`)
-
 	var sectionStack []sectionFrame
 	var inH2 bool
 	var h2Text strings.Builder
 	var targetStart = -1
 
 	lastEnd := 0
-	matches := tagPattern.FindAllStringSubmatchIndex(document, -1)
+	matches := sectionTagPattern.FindAllStringSubmatchIndex(document, -1)
 	for _, match := range matches {
 		start := match[0]
 		end := match[1]
@@ -279,15 +294,10 @@ func parseAssets(sectionHTML string) []Asset {
 		return nil
 	}
 
-	liPattern := regexp.MustCompile(`(?is)<li\b[^>]*>(.*?)</li>`)
-	anchorPattern := regexp.MustCompile(`(?is)<a\b([^>]*)>(.*?)</a>`)
-	imagePattern := regexp.MustCompile(`(?is)<img\b[^>]*src\s*=\s*["']([^"']+)["'][^>]*>`)
-	attributePattern := regexp.MustCompile(`(?is)\b([a-zA-Z:-]+)\s*=\s*["']([^"']*)["']`)
-
 	assets := make([]Asset, 0)
 	seenLinks := make(map[string]struct{})
 
-	for _, liMatch := range liPattern.FindAllStringSubmatch(sectionHTML, -1) {
+	for _, liMatch := range listItemPattern.FindAllStringSubmatch(sectionHTML, -1) {
 		liHTML := liMatch[1]
 		anchorMatch := anchorPattern.FindStringSubmatch(liHTML)
 		if anchorMatch == nil {
@@ -354,8 +364,7 @@ func normalizeImageURL(url string) string {
 }
 
 func stripTags(input string) string {
-	tagPattern := regexp.MustCompile(`(?is)<[^>]+>`)
-	return html.UnescapeString(tagPattern.ReplaceAllString(input, ""))
+	return html.UnescapeString(htmlTagPattern.ReplaceAllString(input, ""))
 }
 
 func cleanText(input string) string {

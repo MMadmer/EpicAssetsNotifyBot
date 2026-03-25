@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"epicassetsnotifybot/internal/config"
@@ -23,6 +25,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var invalidFilenamePattern = regexp.MustCompile(`[\\/*?:"<>|]+`)
+
 type Store interface {
 	Initialize(ctx context.Context) error
 	Close() error
@@ -31,14 +35,28 @@ type Store interface {
 	SaveSnapshot(ctx context.Context, snapshot model.Snapshot) error
 }
 
-type operation struct {
-	run    func() error
-	result chan error
-}
-
 type Attachment struct {
 	Filename string
 	Content  []byte
+}
+
+type attachmentCache struct {
+	signature   string
+	attachments []Attachment
+}
+
+type deliveryTask struct {
+	guildID     int64
+	userID      int64
+	channelID   string
+	content     string
+	attachments []Attachment
+}
+
+type imageTask struct {
+	index int
+	name  string
+	url   string
 }
 
 type Runtime struct {
@@ -48,19 +66,27 @@ type Runtime struct {
 	scraper   fab.Getter
 	session   *discordgo.Session
 	http      *http.Client
-	ops       chan operation
 
 	baseLocale string
 
-	guildConfigs []model.GuildConfig
-	userProfiles []model.UserProfile
-	assets       []model.Asset
-	deadline     model.StoredDeadline
-	nextCheck    time.Time
+	mu               sync.RWMutex
+	guildConfigs     map[int64]*model.GuildConfig
+	userProfiles     map[int64]*model.UserProfile
+	assets           []model.Asset
+	deadline         model.StoredDeadline
+	nextCheck        time.Time
+	stateVersion     uint64
+	persistedVersion uint64
+	attachmentCache  attachmentCache
 
-	deleteAfter time.Duration
-	backupDelay time.Duration
-	messageDelay time.Duration
+	flushCh chan struct{}
+
+	deleteAfter        time.Duration
+	backupDelay        time.Duration
+	persistDebounce    time.Duration
+	deliveryWorkers    int
+	imageFetchWorkers  int
+	attachmentMaxBytes int64
 }
 
 func New(settings config.Settings, localizer *i18n.Localizer, store Store, scraper fab.Getter) (*Runtime, error) {
@@ -92,18 +118,32 @@ func New(settings config.Settings, localizer *i18n.Localizer, store Store, scrap
 		baseLocale = localizer.DefaultLocale()
 	}
 
+	transport := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		MaxIdleConns:        128,
+		MaxIdleConnsPerHost: 32,
+		MaxConnsPerHost:     64,
+		IdleConnTimeout:     90 * time.Second,
+		ForceAttemptHTTP2:   true,
+	}
+
 	runtime := &Runtime{
-		settings:     settings,
-		localizer:    localizer,
-		store:        store,
-		scraper:      scraper,
-		session:      session,
-		http:         &http.Client{Timeout: 30 * time.Second},
-		ops:          make(chan operation),
-		baseLocale:   baseLocale,
-		deleteAfter:  10 * time.Second,
-		backupDelay:  15 * time.Minute,
-		messageDelay: 500 * time.Millisecond,
+		settings:           settings,
+		localizer:          localizer,
+		store:              store,
+		scraper:            scraper,
+		session:            session,
+		http:               &http.Client{Timeout: 30 * time.Second, Transport: transport},
+		baseLocale:         baseLocale,
+		guildConfigs:       make(map[int64]*model.GuildConfig),
+		userProfiles:       make(map[int64]*model.UserProfile),
+		flushCh:            make(chan struct{}, 1),
+		deleteAfter:        10 * time.Second,
+		backupDelay:        15 * time.Minute,
+		persistDebounce:    2 * time.Second,
+		deliveryWorkers:    8,
+		imageFetchWorkers:  4,
+		attachmentMaxBytes: 8 << 20,
 	}
 
 	session.AddHandler(runtime.onMessageCreate)
@@ -126,14 +166,12 @@ func (r *Runtime) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("load snapshot: %w", err)
 	}
-	r.guildConfigs = cloneGuildConfigs(snapshot.GuildConfigs)
-	r.userProfiles = cloneUserProfiles(snapshot.UserProfiles)
-	r.assets = cloneAssets(snapshot.Assets)
-	r.deadline = snapshot.Deadline
+	r.loadSnapshot(snapshot)
 
 	loopCtx, cancelLoop := context.WithCancel(ctx)
 	defer cancelLoop()
-	go r.stateLoop(loopCtx)
+
+	go r.runFlushLoop(loopCtx)
 
 	if err := r.session.Open(); err != nil {
 		_ = r.store.Close()
@@ -141,14 +179,11 @@ func (r *Runtime) Run(ctx context.Context) error {
 	}
 	log.Printf("Logged in as %s", r.session.State.User.Username)
 
-	if err := r.do(loopCtx, func() error {
-		return r.migrateLegacyServerConfigs(loopCtx)
-	}); err != nil {
+	if err := r.migrateLegacyServerConfigs(loopCtx); err != nil {
 		log.Printf("legacy server config migration failed: %v", err)
 	}
 
 	go r.runDailyCheck(loopCtx)
-	go r.runBackupLoop(loopCtx)
 
 	<-ctx.Done()
 	cancelLoop()
@@ -156,51 +191,134 @@ func (r *Runtime) Run(ctx context.Context) error {
 	if err := r.session.Close(); err != nil {
 		log.Printf("close discord session: %v", err)
 	}
+
+	flushCtx, cancelFlush := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelFlush()
+	if err := r.flushDirty(flushCtx); err != nil {
+		log.Printf("final state flush failed: %v", err)
+	}
+
+	if closer, ok := r.scraper.(io.Closer); ok {
+		if err := closer.Close(); err != nil {
+			log.Printf("close scraper: %v", err)
+		}
+	}
+
 	if err := r.store.Close(); err != nil {
 		return fmt.Errorf("close store: %w", err)
 	}
 	return nil
 }
 
-func (r *Runtime) stateLoop(ctx context.Context) {
+func (r *Runtime) loadSnapshot(snapshot model.Snapshot) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.guildConfigs = guildConfigMap(snapshot.GuildConfigs)
+	r.userProfiles = userProfileMap(snapshot.UserProfiles)
+	r.assets = cloneAssets(snapshot.Assets)
+	r.deadline = snapshot.Deadline
+	r.nextCheck = time.Time{}
+	r.stateVersion = 0
+	r.persistedVersion = 0
+	r.attachmentCache = attachmentCache{}
+}
+
+func (r *Runtime) runFlushLoop(ctx context.Context) {
+	ticker := time.NewTicker(r.backupDelay)
+	defer ticker.Stop()
+
+	var (
+		timer  *time.Timer
+		timerC <-chan time.Time
+	)
+
 	for {
 		select {
 		case <-ctx.Done():
+			stopTimer(timer)
 			return
-		case op := <-r.ops:
-			op.result <- op.run()
-			close(op.result)
+		case <-r.flushCh:
+			if r.persistDebounce <= 0 {
+				if err := r.flushDirty(ctx); err != nil && !isContextDone(err) {
+					log.Printf("scheduled database sync failed: %v", err)
+				}
+				continue
+			}
+			if timer == nil {
+				timer = time.NewTimer(r.persistDebounce)
+			} else {
+				stopTimer(timer)
+				timer.Reset(r.persistDebounce)
+			}
+			timerC = timer.C
+		case <-ticker.C:
+			if err := r.flushDirty(ctx); err != nil && !isContextDone(err) {
+				log.Printf("scheduled database sync failed: %v", err)
+			}
+		case <-timerC:
+			timer = nil
+			timerC = nil
+			if err := r.flushDirty(ctx); err != nil && !isContextDone(err) {
+				log.Printf("scheduled database sync failed: %v", err)
+			}
 		}
 	}
 }
 
-func (r *Runtime) do(ctx context.Context, run func() error) error {
-	op := operation{
-		run:    run,
-		result: make(chan error, 1),
-	}
-
+func (r *Runtime) requestFlush() {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case r.ops <- op:
+	case r.flushCh <- struct{}{}:
+	default:
 	}
+}
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-op.result:
+func (r *Runtime) flushDirty(ctx context.Context) error {
+	snapshot, version, ok := r.snapshotForSave()
+	if !ok {
+		return nil
+	}
+	if err := r.store.SaveSnapshot(ctx, snapshot); err != nil {
 		return err
 	}
+
+	r.mu.Lock()
+	if version > r.persistedVersion {
+		r.persistedVersion = version
+	}
+	r.mu.Unlock()
+
+	log.Printf("Persisted bot state to database.")
+	return nil
+}
+
+func (r *Runtime) snapshotForSave() (model.Snapshot, uint64, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	if r.persistedVersion >= r.stateVersion {
+		return model.Snapshot{}, 0, false
+	}
+
+	return model.Snapshot{
+		GuildConfigs: cloneGuildConfigMap(r.guildConfigs),
+		UserProfiles: cloneUserProfileMap(r.userProfiles),
+		Assets:       cloneAssets(r.assets),
+		Deadline:     r.deadline,
+	}, r.stateVersion, true
+}
+
+func (r *Runtime) markStateDirtyLocked() {
+	r.stateVersion++
 }
 
 func (r *Runtime) runDailyCheck(ctx context.Context) {
 	for {
-		err := r.do(ctx, func() error {
-			r.nextCheck = time.Now().Add(24 * time.Hour)
-			return r.checkAndNotifyAssets(ctx)
-		})
-		if err != nil && !isContextDone(err) {
+		r.mu.Lock()
+		r.nextCheck = time.Now().Add(24 * time.Hour)
+		r.mu.Unlock()
+
+		if err := r.checkAndNotifyAssets(ctx); err != nil && !isContextDone(err) {
 			log.Printf("scheduled asset check failed: %v", err)
 		}
 		if sleepErr := sleepContext(ctx, 24*time.Hour); sleepErr != nil {
@@ -209,36 +327,11 @@ func (r *Runtime) runDailyCheck(ctx context.Context) {
 	}
 }
 
-func (r *Runtime) runBackupLoop(ctx context.Context) {
-	for {
-		if sleepErr := sleepContext(ctx, r.backupDelay); sleepErr != nil {
-			return
-		}
-		err := r.do(ctx, func() error {
-			return r.backupData(ctx)
-		})
-		if err != nil && !isContextDone(err) {
-			log.Printf("scheduled database sync failed: %v", err)
-		}
-	}
-}
-
-func (r *Runtime) backupData(ctx context.Context) error {
-	snapshot := model.Snapshot{
-		GuildConfigs: cloneGuildConfigs(r.guildConfigs),
-		UserProfiles: cloneUserProfiles(r.userProfiles),
-		Assets:       cloneAssets(r.assets),
-		Deadline:     r.deadline,
-	}
-	if err := r.store.SaveSnapshot(ctx, snapshot); err != nil {
-		return err
-	}
-	log.Printf("Persisted bot state to database.")
-	return nil
-}
-
 func (r *Runtime) migrateLegacyServerConfigs(ctx context.Context) error {
-	if len(r.guildConfigs) > 0 {
+	r.mu.RLock()
+	hasConfigs := len(r.guildConfigs) > 0
+	r.mu.RUnlock()
+	if hasConfigs {
 		return nil
 	}
 
@@ -250,7 +343,7 @@ func (r *Runtime) migrateLegacyServerConfigs(ctx context.Context) error {
 		return nil
 	}
 
-	converted := make(map[int64]model.GuildConfig)
+	converted := make(map[int64]model.GuildConfig, len(legacyChannels))
 	duplicateChannels := make(map[int64][]int64)
 	var unresolved []int64
 
@@ -289,11 +382,17 @@ func (r *Runtime) migrateLegacyServerConfigs(ctx context.Context) error {
 		return nil
 	}
 
-	r.guildConfigs = make([]model.GuildConfig, 0, len(converted))
-	for _, cfg := range converted {
-		r.guildConfigs = append(r.guildConfigs, cfg)
+	r.mu.Lock()
+	if len(r.guildConfigs) == 0 {
+		for _, cfg := range converted {
+			cloned := cloneGuildConfig(cfg)
+			r.guildConfigs[cfg.GuildID] = &cloned
+		}
+		r.markStateDirtyLocked()
 	}
-	if err := r.backupData(ctx); err != nil {
+	r.mu.Unlock()
+
+	if err := r.flushDirty(ctx); err != nil {
 		return err
 	}
 
@@ -322,131 +421,336 @@ func (r *Runtime) checkAndNotifyAssets(ctx context.Context) error {
 
 	newAssets := mapFabAssets(assets)
 	newDeadline := mapFabDeadline(deadlineInfo)
-
 	newIDs := assetIDSet(newAssets)
+
+	r.mu.Lock()
 	oldIDs := assetIDSet(r.assets)
 	deadlineChanged := r.deadlineSignature(newDeadline) != r.deadlineSignature(r.deadline)
 
 	added := difference(newIDs, oldIDs)
 	if !deadlineChanged && len(added) == 0 && subset(newIDs, oldIDs) && len(newIDs) != len(oldIDs) {
+		r.mu.Unlock()
 		log.Printf("Shrink-only change detected, likely transient scrape issue. Skipping update.")
 		return nil
 	}
 	if !deadlineChanged && equalSets(newIDs, oldIDs) {
+		r.mu.Unlock()
 		return nil
 	}
 
-	r.assets = newAssets
+	r.assets = cloneAssets(newAssets)
 	r.deadline = newDeadline
+	r.attachmentCache = attachmentCache{}
+	guildTargets := r.enabledGuildConfigsLocked()
+	userTargets := r.subscribedUsersLocked()
+	r.markStateDirtyLocked()
+	r.mu.Unlock()
 
-	attachmentsCache := []Attachment(nil)
-	messageCache := make(map[string]string)
+	guildSuccess, userSuccess := r.notifyRecipients(ctx, newAssets, guildTargets, userTargets)
+	r.markRecipientsShown(guildSuccess, userSuccess)
 
-	currentAttachments := func() ([]Attachment, error) {
-		if attachmentsCache != nil {
-			return attachmentsCache, nil
-		}
-		built, err := r.buildAttachments(r.assets)
-		if err != nil {
-			return nil, err
-		}
-		attachmentsCache = built
-		return attachmentsCache, nil
+	return r.flushDirty(ctx)
+}
+
+func (r *Runtime) notifyRecipients(ctx context.Context, assets []model.Asset, guilds []model.GuildConfig, users []model.UserProfile) ([]int64, []int64) {
+	if len(guilds) == 0 && len(users) == 0 {
+		return nil, nil
 	}
 
-	for _, cfg := range r.enabledGuildConfigs() {
-		guildLocale := cfg.Locale
-		message, ok := messageCache[guildLocale]
-		if !ok {
-			message = r.composeMessage(r.assets, r.localizerForLocale(guildLocale))
-			messageCache[guildLocale] = message
+	messageCache := make(map[string]string, len(guilds)+len(users))
+	messageForLocale := func(locale string) string {
+		if message, ok := messageCache[locale]; ok {
+			return message
 		}
+		message := r.composeMessage(assets, r.localizerForLocale(locale))
+		messageCache[locale] = message
+		return message
+	}
 
+	needAttachments := len(users) > 0
+	if !needAttachments {
+		for _, cfg := range guilds {
+			if cfg.IncludeImages {
+				needAttachments = true
+				break
+			}
+		}
+	}
+
+	var attachments []Attachment
+	if needAttachments {
+		built, err := r.getAttachments(ctx, assets)
+		if err != nil {
+			log.Printf("attachment build failed: %v", err)
+		} else {
+			attachments = built
+		}
+	}
+
+	tasks := make([]deliveryTask, 0, len(guilds)+len(users))
+	for _, cfg := range guilds {
 		channelID := r.targetChannelID(cfg)
 		if channelID == "" {
 			log.Printf("Configured target for guild %d could not be resolved.", cfg.GuildID)
-			_ = sleepContext(ctx, r.messageDelay)
 			continue
 		}
 
-		attachments := []Attachment{}
+		task := deliveryTask{
+			guildID:   cfg.GuildID,
+			channelID: channelID,
+			content:   r.composeDeliveryContent(cfg, messageForLocale(cfg.Locale)),
+		}
 		if cfg.IncludeImages {
-			cached, err := currentAttachments()
-			if err != nil {
-				log.Printf("attachment build failed: %v", err)
-			} else {
-				attachments = cached
-			}
+			task.attachments = attachments
 		}
-
-		if err := r.sendAssetMessage(channelID, r.composeDeliveryContent(cfg, message), attachments); err != nil {
-			log.Printf("Send failed for guild %d: %v", cfg.GuildID, err)
-		} else {
-			if current := r.findGuildConfig(cfg.GuildID); current != nil {
-				current.ShownAssets = true
-			}
-		}
-		_ = sleepContext(ctx, r.messageDelay)
+		tasks = append(tasks, task)
 	}
 
-	for _, user := range r.subscribedUsers() {
-		userLocale := user.Locale
-		message, ok := messageCache[userLocale]
-		if !ok {
-			message = r.composeMessage(r.assets, r.localizerForLocale(userLocale))
-			messageCache[userLocale] = message
-		}
-
-		attachments, err := currentAttachments()
-		if err != nil {
-			log.Printf("attachment build failed: %v", err)
-		}
-
-		channel, err := r.session.UserChannelCreate(strconv.FormatInt(user.ID, 10))
-		if err != nil {
-			log.Printf("DM channel create failed for %d: %v", user.ID, err)
-			_ = sleepContext(ctx, r.messageDelay)
-			continue
-		}
-		if err := r.sendAssetMessage(channel.ID, message, attachments); err != nil {
-			log.Printf("DM failed for %d: %v", user.ID, err)
-		} else if current := r.findUserProfile(user.ID); current != nil {
-			current.ShownAssets = true
-		}
-		_ = sleepContext(ctx, r.messageDelay)
+	for _, user := range users {
+		tasks = append(tasks, deliveryTask{
+			userID:      user.ID,
+			content:     messageForLocale(user.Locale),
+			attachments: attachments,
+		})
 	}
 
-	return r.backupData(ctx)
+	return r.runDeliveryTasks(ctx, tasks)
 }
 
-func (r *Runtime) buildAttachments(assets []model.Asset) ([]Attachment, error) {
-	attachments := make([]Attachment, 0)
+func (r *Runtime) runDeliveryTasks(ctx context.Context, tasks []deliveryTask) ([]int64, []int64) {
+	if len(tasks) == 0 {
+		return nil, nil
+	}
+
+	workerCount := r.deliveryWorkers
+	if workerCount <= 0 {
+		workerCount = 1
+	}
+	if workerCount > len(tasks) {
+		workerCount = len(tasks)
+	}
+
+	jobs := make(chan deliveryTask)
+	var wg sync.WaitGroup
+	var resultMu sync.Mutex
+
+	successGuilds := make([]int64, 0, len(tasks))
+	successUsers := make([]int64, 0, len(tasks))
+
+	for range workerCount {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for task := range jobs {
+				if err := r.executeDelivery(task); err != nil {
+					if task.guildID != 0 {
+						log.Printf("Send failed for guild %d: %v", task.guildID, err)
+					} else {
+						log.Printf("DM failed for %d: %v", task.userID, err)
+					}
+					continue
+				}
+
+				resultMu.Lock()
+				if task.guildID != 0 {
+					successGuilds = append(successGuilds, task.guildID)
+				}
+				if task.userID != 0 {
+					successUsers = append(successUsers, task.userID)
+				}
+				resultMu.Unlock()
+			}
+		}()
+	}
+
+outer:
+	for _, task := range tasks {
+		select {
+		case <-ctx.Done():
+			break outer
+		case jobs <- task:
+		}
+	}
+
+	close(jobs)
+	wg.Wait()
+	return successGuilds, successUsers
+}
+
+func (r *Runtime) executeDelivery(task deliveryTask) error {
+	channelID := task.channelID
+	if task.userID != 0 {
+		channel, err := r.session.UserChannelCreate(strconv.FormatInt(task.userID, 10))
+		if err != nil {
+			return fmt.Errorf("create DM channel: %w", err)
+		}
+		channelID = channel.ID
+	}
+
+	return r.sendAssetMessage(channelID, task.content, task.attachments)
+}
+
+func (r *Runtime) markRecipientsShown(guildIDs, userIDs []int64) {
+	if len(guildIDs) == 0 && len(userIDs) == 0 {
+		return
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	changed := false
+	for _, guildID := range guildIDs {
+		cfg := r.guildConfigs[guildID]
+		if cfg == nil || cfg.ShownAssets {
+			continue
+		}
+		cfg.ShownAssets = true
+		changed = true
+	}
+	for _, userID := range userIDs {
+		profile := r.userProfiles[userID]
+		if profile == nil || profile.ShownAssets {
+			continue
+		}
+		profile.ShownAssets = true
+		changed = true
+	}
+	if changed {
+		r.markStateDirtyLocked()
+	}
+}
+
+func (r *Runtime) getAttachments(ctx context.Context, assets []model.Asset) ([]Attachment, error) {
+	signature := attachmentSignature(assets)
+	if signature == "" {
+		return nil, nil
+	}
+
+	r.mu.RLock()
+	if r.attachmentCache.signature == signature && r.attachmentCache.attachments != nil {
+		cached := r.attachmentCache.attachments
+		r.mu.RUnlock()
+		return cached, nil
+	}
+	r.mu.RUnlock()
+
+	built, err := r.buildAttachments(ctx, assets)
+	if err != nil {
+		return nil, err
+	}
+
+	r.mu.Lock()
+	if r.attachmentCache.signature == signature && r.attachmentCache.attachments != nil {
+		cached := r.attachmentCache.attachments
+		r.mu.Unlock()
+		return cached, nil
+	}
+	r.attachmentCache = attachmentCache{
+		signature:   signature,
+		attachments: built,
+	}
+	r.mu.Unlock()
+
+	return built, nil
+}
+
+func (r *Runtime) buildAttachments(ctx context.Context, assets []model.Asset) ([]Attachment, error) {
+	tasks := make([]imageTask, 0, len(assets))
 	for _, asset := range assets {
 		if asset.Image == nil || strings.TrimSpace(*asset.Image) == "" {
 			continue
 		}
+		tasks = append(tasks, imageTask{
+			index: len(tasks),
+			name:  derefString(asset.Name, "image"),
+			url:   strings.TrimSpace(*asset.Image),
+		})
+	}
+	if len(tasks) == 0 {
+		return nil, nil
+	}
 
-		req, err := http.NewRequest(http.MethodGet, *asset.Image, nil)
-		if err != nil {
-			log.Printf("Image request build failed for %s: %v", asset.Link, err)
-			continue
-		}
-		resp, err := r.http.Do(req)
-		if err != nil {
-			log.Printf("Image fetch failed for %s: %v", asset.Link, err)
-			continue
-		}
-		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			log.Printf("Image read failed for %s: %v", asset.Link, err)
-			continue
-		}
+	workerCount := r.imageFetchWorkers
+	if workerCount <= 0 {
+		workerCount = 1
+	}
+	if workerCount > len(tasks) {
+		workerCount = len(tasks)
+	}
 
-		filename := safeFilename(derefString(asset.Name, "image")) + ".png"
-		attachments = append(attachments, Attachment{Filename: filename, Content: body})
+	jobs := make(chan imageTask)
+	results := make([]Attachment, len(tasks))
+	ready := make([]bool, len(tasks))
+	var wg sync.WaitGroup
+
+	for range workerCount {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for task := range jobs {
+				attachment, err := r.downloadAttachment(ctx, task.url, task.name)
+				if err != nil {
+					log.Printf("Image fetch failed for %s: %v", task.url, err)
+					continue
+				}
+				results[task.index] = attachment
+				ready[task.index] = true
+			}
+		}()
+	}
+
+outer:
+	for _, task := range tasks {
+		select {
+		case <-ctx.Done():
+			break outer
+		case jobs <- task:
+		}
+	}
+
+	close(jobs)
+	wg.Wait()
+
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	attachments := make([]Attachment, 0, len(tasks))
+	for idx, ok := range ready {
+		if !ok {
+			continue
+		}
+		attachments = append(attachments, results[idx])
 	}
 	return attachments, nil
+}
+
+func (r *Runtime) downloadAttachment(ctx context.Context, imageURL, name string) (Attachment, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imageURL, nil)
+	if err != nil {
+		return Attachment{}, fmt.Errorf("build request: %w", err)
+	}
+
+	resp, err := r.http.Do(req)
+	if err != nil {
+		return Attachment{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return Attachment{}, fmt.Errorf("unexpected status %s", resp.Status)
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, r.attachmentMaxBytes+1))
+	if err != nil {
+		return Attachment{}, fmt.Errorf("read body: %w", err)
+	}
+	if int64(len(body)) > r.attachmentMaxBytes {
+		return Attachment{}, fmt.Errorf("attachment exceeds %d bytes", r.attachmentMaxBytes)
+	}
+
+	filename := safeFilename(name) + ".png"
+	return Attachment{Filename: filename, Content: body}, nil
 }
 
 func (r *Runtime) sendAssetMessage(channelID, content string, attachments []Attachment) error {
@@ -494,6 +798,7 @@ func (r *Runtime) resolveChannelObject(channelID string) (*discordgo.Channel, er
 
 func (r *Runtime) composeMessage(assets []model.Asset, localizer *i18n.Localizer) string {
 	var builder strings.Builder
+	builder.Grow(len(assets)*96 + 128)
 	builder.WriteString(r.composeHeader(localizer))
 	for _, asset := range assets {
 		if strings.TrimSpace(asset.Link) == "" {
@@ -523,16 +828,20 @@ func (r *Runtime) composeHeader(localizer *i18n.Localizer) string {
 }
 
 func (r *Runtime) formatDeadlineSuffix(localizer *i18n.Localizer) string {
+	r.mu.RLock()
+	deadline := r.deadline
+	r.mu.RUnlock()
+
 	switch {
-	case r.deadline.Raw != nil:
-		return *r.deadline.Raw
-	case r.deadline.Structured != nil:
+	case deadline.Raw != nil:
+		return *deadline.Raw
+	case deadline.Structured != nil:
 		return localizer.T("deadline.until", map[string]any{
-			"day":        r.deadline.Structured.Day,
-			"month_name": localizer.MonthName(r.deadline.Structured.Month, "format"),
-			"hour":       r.deadline.Structured.Hour,
-			"minute":     r.deadline.Structured.Minute,
-			"gmt_offset": r.deadline.Structured.GMTOffset,
+			"day":        deadline.Structured.Day,
+			"month_name": localizer.MonthName(deadline.Structured.Month, "format"),
+			"hour":       deadline.Structured.Hour,
+			"minute":     deadline.Structured.Minute,
+			"gmt_offset": deadline.Structured.GMTOffset,
 		})
 	default:
 		return ""
@@ -551,14 +860,20 @@ func (r *Runtime) localizerForLocale(locale string) *i18n.Localizer {
 }
 
 func (r *Runtime) guildLocale(guildID int64) string {
-	if cfg := r.findGuildConfig(guildID); cfg != nil {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	if cfg := r.guildConfigs[guildID]; cfg != nil {
 		return cfg.Locale
 	}
 	return r.baseLocale
 }
 
 func (r *Runtime) userLocale(userID int64) string {
-	if profile := r.findUserProfile(userID); profile != nil {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	if profile := r.userProfiles[userID]; profile != nil {
 		return profile.Locale
 	}
 	return r.baseLocale
@@ -573,26 +888,22 @@ func (r *Runtime) localizerForMessage(message *discordgo.MessageCreate) *i18n.Lo
 	return r.localizer.ForLocale(r.guildLocale(guildID))
 }
 
-func (r *Runtime) findGuildConfig(guildID int64) *model.GuildConfig {
-	for idx := range r.guildConfigs {
-		if r.guildConfigs[idx].GuildID == guildID {
-			return &r.guildConfigs[idx]
-		}
-	}
-	return nil
+func (r *Runtime) guildConfigLocked(guildID int64) *model.GuildConfig {
+	return r.guildConfigs[guildID]
 }
 
-func (r *Runtime) ensureGuildConfig(guildID int64) *model.GuildConfig {
-	if cfg := r.findGuildConfig(guildID); cfg != nil {
+func (r *Runtime) ensureGuildConfigLocked(guildID int64) *model.GuildConfig {
+	if cfg := r.guildConfigLocked(guildID); cfg != nil {
 		return cfg
 	}
-	r.guildConfigs = append(r.guildConfigs, model.GuildConfig{
+	cfg := &model.GuildConfig{
 		GuildID:       guildID,
 		Locale:        r.baseLocale,
 		Enabled:       false,
 		IncludeImages: true,
-	})
-	return &r.guildConfigs[len(r.guildConfigs)-1]
+	}
+	r.guildConfigs[guildID] = cfg
+	return cfg
 }
 
 func (r *Runtime) setGuildTarget(cfg *model.GuildConfig, channelID, threadID *int64) bool {
@@ -605,26 +916,22 @@ func (r *Runtime) setGuildTarget(cfg *model.GuildConfig, channelID, threadID *in
 	return changed
 }
 
-func (r *Runtime) findUserProfile(userID int64) *model.UserProfile {
-	for idx := range r.userProfiles {
-		if r.userProfiles[idx].ID == userID {
-			return &r.userProfiles[idx]
-		}
-	}
-	return nil
+func (r *Runtime) userProfileLocked(userID int64) *model.UserProfile {
+	return r.userProfiles[userID]
 }
 
-func (r *Runtime) ensureUserProfile(userID int64) *model.UserProfile {
-	if profile := r.findUserProfile(userID); profile != nil {
+func (r *Runtime) ensureUserProfileLocked(userID int64) *model.UserProfile {
+	if profile := r.userProfileLocked(userID); profile != nil {
 		return profile
 	}
-	r.userProfiles = append(r.userProfiles, model.UserProfile{
+	profile := &model.UserProfile{
 		ID:          userID,
 		Locale:      r.baseLocale,
 		ShownAssets: false,
 		Subscribed:  false,
-	})
-	return &r.userProfiles[len(r.userProfiles)-1]
+	}
+	r.userProfiles[userID] = profile
+	return profile
 }
 
 func (r *Runtime) targetChannelID(cfg model.GuildConfig) string {
@@ -637,54 +944,154 @@ func (r *Runtime) targetChannelID(cfg model.GuildConfig) string {
 	return ""
 }
 
-func (r *Runtime) enabledGuildConfigs() []model.GuildConfig {
-	result := make([]model.GuildConfig, 0)
+func (r *Runtime) enabledGuildConfigsLocked() []model.GuildConfig {
+	result := make([]model.GuildConfig, 0, len(r.guildConfigs))
 	for _, cfg := range r.guildConfigs {
 		if cfg.Enabled && cfg.ChannelID != nil {
-			result = append(result, cfg)
+			result = append(result, cloneGuildConfig(*cfg))
 		}
 	}
+	slices.SortFunc(result, func(left, right model.GuildConfig) int {
+		switch {
+		case left.GuildID < right.GuildID:
+			return -1
+		case left.GuildID > right.GuildID:
+			return 1
+		default:
+			return 0
+		}
+	})
 	return result
 }
 
-func (r *Runtime) subscribedUsers() []model.UserProfile {
-	result := make([]model.UserProfile, 0)
+func (r *Runtime) subscribedUsersLocked() []model.UserProfile {
+	result := make([]model.UserProfile, 0, len(r.userProfiles))
 	for _, profile := range r.userProfiles {
 		if profile.Subscribed {
-			result = append(result, profile)
+			result = append(result, *profile)
 		}
 	}
+	slices.SortFunc(result, func(left, right model.UserProfile) int {
+		switch {
+		case left.ID < right.ID:
+			return -1
+		case left.ID > right.ID:
+			return 1
+		default:
+			return 0
+		}
+	})
 	return result
 }
 
-func (r *Runtime) sendCurrentAssetsToGuild(ctx context.Context, cfg *model.GuildConfig) bool {
-	if cfg == nil || !cfg.Enabled || len(r.assets) == 0 || cfg.ShownAssets {
+func (r *Runtime) sendCurrentAssetsToGuild(ctx context.Context, guildID int64) bool {
+	cfg, assets, ok := r.guildDeliveryState(guildID)
+	if !ok {
 		return false
 	}
 
-	channelID := r.targetChannelID(*cfg)
+	channelID := r.targetChannelID(cfg)
 	if channelID == "" {
 		log.Printf("Configured target for guild %d could not be resolved.", cfg.GuildID)
 		return false
 	}
 
-	localizer := r.localizerForLocale(cfg.Locale)
-	message := r.composeMessage(r.assets, localizer)
+	message := r.composeMessage(assets, r.localizerForLocale(cfg.Locale))
 
-	attachments := []Attachment{}
+	var attachments []Attachment
 	if cfg.IncludeImages {
-		built, err := r.buildAttachments(r.assets)
-		if err == nil {
+		built, err := r.getAttachments(ctx, assets)
+		if err != nil {
+			log.Printf("attachment build failed: %v", err)
+		} else {
 			attachments = built
 		}
 	}
 
-	if err := r.sendAssetMessage(channelID, r.composeDeliveryContent(*cfg, message), attachments); err != nil {
+	if err := r.sendAssetMessage(channelID, r.composeDeliveryContent(cfg, message), attachments); err != nil {
 		log.Printf("Initial asset send failed for guild %d: %v", cfg.GuildID, err)
 		return false
 	}
 
+	if r.markGuildShown(guildID) {
+		r.requestFlush()
+	}
+	return true
+}
+
+func (r *Runtime) guildDeliveryState(guildID int64) (model.GuildConfig, []model.Asset, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	cfg := r.guildConfigs[guildID]
+	if cfg == nil || !cfg.Enabled || len(r.assets) == 0 || cfg.ShownAssets {
+		return model.GuildConfig{}, nil, false
+	}
+	return cloneGuildConfig(*cfg), cloneAssets(r.assets), true
+}
+
+func (r *Runtime) sendCurrentAssetsToUser(ctx context.Context, userID int64) bool {
+	profile, assets, ok := r.userDeliveryState(userID)
+	if !ok {
+		return false
+	}
+
+	attachments, err := r.getAttachments(ctx, assets)
+	if err != nil {
+		log.Printf("attachment build failed: %v", err)
+	}
+
+	body := r.composeMessage(assets, r.localizerForLocale(profile.Locale))
+	dmChannel, err := r.session.UserChannelCreate(strconv.FormatInt(userID, 10))
+	if err != nil {
+		log.Printf("DM channel create failed for %d: %v", userID, err)
+		return false
+	}
+	if err := r.sendAssetMessage(dmChannel.ID, body, attachments); err != nil {
+		log.Printf("DM failed for %d: %v", userID, err)
+		return false
+	}
+
+	if r.markUserShown(userID) {
+		r.requestFlush()
+	}
+	return true
+}
+
+func (r *Runtime) userDeliveryState(userID int64) (model.UserProfile, []model.Asset, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	profile := r.userProfiles[userID]
+	if profile == nil || !profile.Subscribed || len(r.assets) == 0 || profile.ShownAssets {
+		return model.UserProfile{}, nil, false
+	}
+	return *profile, cloneAssets(r.assets), true
+}
+
+func (r *Runtime) markGuildShown(guildID int64) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	cfg := r.guildConfigs[guildID]
+	if cfg == nil || cfg.ShownAssets {
+		return false
+	}
 	cfg.ShownAssets = true
+	r.markStateDirtyLocked()
+	return true
+}
+
+func (r *Runtime) markUserShown(userID int64) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	profile := r.userProfiles[userID]
+	if profile == nil || profile.ShownAssets {
+		return false
+	}
+	profile.ShownAssets = true
+	r.markStateDirtyLocked()
 	return true
 }
 
@@ -701,10 +1108,14 @@ func (r *Runtime) deadlineSignature(deadline model.StoredDeadline) string {
 }
 
 func (r *Runtime) nextCheckLabel(localizer *i18n.Localizer) string {
-	if r.nextCheck.IsZero() {
+	r.mu.RLock()
+	nextCheck := r.nextCheck
+	r.mu.RUnlock()
+
+	if nextCheck.IsZero() {
 		return localizer.T("server.settings.no_next_check", nil)
 	}
-	remaining := time.Until(r.nextCheck)
+	remaining := time.Until(nextCheck)
 	if remaining < 0 {
 		remaining = 0
 	}
@@ -842,7 +1253,7 @@ func (r *Runtime) missingTargetPermissions(channelID string, includeImages bool)
 		return nil
 	}
 
-	missing := make([]string, 0)
+	missing := make([]string, 0, 2)
 	if isThreadChannel(channel.Type) {
 		if perms&discordgo.PermissionSendMessagesInThreads == 0 {
 			missing = append(missing, "send_messages_in_threads")
@@ -890,6 +1301,24 @@ func mapFabDeadline(info *fab.DeadlineInfo) model.StoredDeadline {
 	}
 }
 
+func guildConfigMap(input []model.GuildConfig) map[int64]*model.GuildConfig {
+	output := make(map[int64]*model.GuildConfig, len(input))
+	for _, cfg := range input {
+		cloned := cloneGuildConfig(cfg)
+		output[cfg.GuildID] = &cloned
+	}
+	return output
+}
+
+func userProfileMap(input []model.UserProfile) map[int64]*model.UserProfile {
+	output := make(map[int64]*model.UserProfile, len(input))
+	for _, profile := range input {
+		cloned := profile
+		output[profile.ID] = &cloned
+	}
+	return output
+}
+
 func cloneAssets(input []model.Asset) []model.Asset {
 	output := make([]model.Asset, 0, len(input))
 	for _, asset := range input {
@@ -907,21 +1336,47 @@ func cloneAssets(input []model.Asset) []model.Asset {
 	return output
 }
 
-func cloneGuildConfigs(input []model.GuildConfig) []model.GuildConfig {
+func cloneGuildConfigMap(input map[int64]*model.GuildConfig) []model.GuildConfig {
 	output := make([]model.GuildConfig, 0, len(input))
 	for _, cfg := range input {
-		cloned := cfg
-		cloned.ChannelID = cloneInt64Ptr(cfg.ChannelID)
-		cloned.ThreadID = cloneInt64Ptr(cfg.ThreadID)
-		cloned.MentionRoleID = cloneInt64Ptr(cfg.MentionRoleID)
-		output = append(output, cloned)
+		output = append(output, cloneGuildConfig(*cfg))
 	}
+	slices.SortFunc(output, func(left, right model.GuildConfig) int {
+		switch {
+		case left.GuildID < right.GuildID:
+			return -1
+		case left.GuildID > right.GuildID:
+			return 1
+		default:
+			return 0
+		}
+	})
 	return output
 }
 
-func cloneUserProfiles(input []model.UserProfile) []model.UserProfile {
-	output := make([]model.UserProfile, len(input))
-	copy(output, input)
+func cloneGuildConfig(cfg model.GuildConfig) model.GuildConfig {
+	cloned := cfg
+	cloned.ChannelID = cloneInt64Ptr(cfg.ChannelID)
+	cloned.ThreadID = cloneInt64Ptr(cfg.ThreadID)
+	cloned.MentionRoleID = cloneInt64Ptr(cfg.MentionRoleID)
+	return cloned
+}
+
+func cloneUserProfileMap(input map[int64]*model.UserProfile) []model.UserProfile {
+	output := make([]model.UserProfile, 0, len(input))
+	for _, profile := range input {
+		output = append(output, *profile)
+	}
+	slices.SortFunc(output, func(left, right model.UserProfile) int {
+		switch {
+		case left.ID < right.ID:
+			return -1
+		case left.ID > right.ID:
+			return 1
+		default:
+			return 0
+		}
+	})
 	return output
 }
 
@@ -979,9 +1434,31 @@ func equalSets(left, right map[string]struct{}) bool {
 	return len(left) == len(right) && subset(left, right)
 }
 
+func attachmentSignature(assets []model.Asset) string {
+	hasher := fnv.New64a()
+	hasImage := false
+
+	for _, asset := range assets {
+		if asset.Image == nil || strings.TrimSpace(*asset.Image) == "" {
+			continue
+		}
+		hasImage = true
+		_, _ = hasher.Write([]byte(derefString(asset.Name, "")))
+		_, _ = hasher.Write([]byte{0})
+		_, _ = hasher.Write([]byte(asset.Link))
+		_, _ = hasher.Write([]byte{0})
+		_, _ = hasher.Write([]byte(*asset.Image))
+		_, _ = hasher.Write([]byte{0})
+	}
+
+	if !hasImage {
+		return ""
+	}
+	return strconv.FormatUint(hasher.Sum64(), 16)
+}
+
 func safeFilename(name string) string {
-	re := regexp.MustCompile(`[\\/*?:"<>|]+`)
-	safe := re.ReplaceAllString(strings.TrimSpace(name), "_")
+	safe := invalidFilenamePattern.ReplaceAllString(strings.TrimSpace(name), "_")
 	safe = strings.TrimSpace(safe)
 	if safe == "" {
 		return "image"
@@ -1007,8 +1484,20 @@ func sleepContext(ctx context.Context, delay time.Duration) error {
 	}
 }
 
+func stopTimer(timer *time.Timer) {
+	if timer == nil {
+		return
+	}
+	if !timer.Stop() {
+		select {
+		case <-timer.C:
+		default:
+		}
+	}
+}
+
 func isContextDone(err error) bool {
-	return err == context.Canceled || err == context.DeadlineExceeded
+	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
 func derefString(value *string, fallback string) string {
@@ -1041,7 +1530,3 @@ func currentTargetIDs(channel *discordgo.Channel) (*int64, *int64) {
 	}
 	return &channelID, nil
 }
-
-
-
-

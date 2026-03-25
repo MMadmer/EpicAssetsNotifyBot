@@ -1,4 +1,4 @@
-﻿package i18n
+package i18n
 
 import (
 	"bytes"
@@ -12,28 +12,38 @@ import (
 	"strings"
 )
 
-// Localizer resolves localized strings from JSON catalogs on disk.
+// Localizer resolves localized strings from immutable in-memory catalogs.
 type Localizer struct {
 	locale        string
 	defaultLocale string
 	localesDir    string
-	catalogCache  map[string]map[string]any
-	nameCache     map[string]string
+	catalogs      map[string]map[string]any
+	localeNames   map[string]string
+	localeCodes   []string
+	localeAliases map[string]string
 }
 
-// New builds a localizer and eagerly loads the default catalog.
+// New builds a localizer and preloads locale metadata once.
 func New(locale, defaultLocale, localesDir string) (*Localizer, error) {
 	l := &Localizer{
 		locale:        locale,
 		defaultLocale: defaultLocale,
 		localesDir:    localesDir,
-		catalogCache:  make(map[string]map[string]any),
-		nameCache:     make(map[string]string),
+		catalogs:      make(map[string]map[string]any),
+		localeNames:   make(map[string]string),
+		localeAliases: make(map[string]string),
 	}
+
+	codes := discoverLocaleCodes(localesDir)
 	if _, err := l.loadCatalog(defaultLocale, true); err != nil {
 		return nil, err
 	}
-	_, _ = l.loadCatalog(locale, false)
+	for _, code := range codes {
+		if _, err := l.loadCatalog(code, false); err != nil {
+			return nil, err
+		}
+	}
+	l.buildLocaleMetadata(codes)
 	return l, nil
 }
 
@@ -65,19 +75,16 @@ func (l *Localizer) ForLocale(locale string) *Localizer {
 		locale:        resolved,
 		defaultLocale: l.defaultLocale,
 		localesDir:    l.localesDir,
-		catalogCache:  l.catalogCache,
-		nameCache:     l.nameCache,
+		catalogs:      l.catalogs,
+		localeNames:   l.localeNames,
+		localeCodes:   l.localeCodes,
+		localeAliases: l.localeAliases,
 	}
 }
 
 func (l *Localizer) AvailableLocales() map[string]string {
-	codes := l.sortedLocaleCodes()
-	if len(codes) == 0 {
-		return map[string]string{}
-	}
-
-	out := make(map[string]string, len(codes))
-	for _, code := range codes {
+	out := make(map[string]string, len(l.localeCodes))
+	for _, code := range l.localeCodes {
 		out[code] = l.catalogLocaleName(code)
 	}
 	return out
@@ -96,26 +103,7 @@ func (l *Localizer) NormalizeLocale(locale string) string {
 	if candidate == "" {
 		return ""
 	}
-
-	aliases := make(map[string]string)
-	for _, code := range l.sortedLocaleCodes() {
-		name := l.catalogLocaleName(code)
-		normalizedCode := strings.ToLower(code)
-		aliases[normalizedCode] = code
-		aliases[strings.ReplaceAll(normalizedCode, "-", "")] = code
-
-		short := strings.ToLower(strings.SplitN(code, "-", 2)[0])
-		if _, ok := aliases[short]; !ok {
-			aliases[short] = code
-		}
-
-		normalizedName := strings.ToLower(strings.TrimSpace(name))
-		if normalizedName != "" {
-			aliases[normalizedName] = code
-		}
-	}
-
-	return aliases[strings.ToLower(candidate)]
+	return l.localeAliases[strings.ToLower(candidate)]
 }
 
 func (l *Localizer) translate(key string, args map[string]any) string {
@@ -135,7 +123,7 @@ func (l *Localizer) translate(key string, args map[string]any) string {
 }
 
 func (l *Localizer) loadCatalog(locale string, required bool) (map[string]any, error) {
-	if catalog, ok := l.catalogCache[locale]; ok {
+	if catalog, ok := l.catalogs[locale]; ok {
 		return catalog, nil
 	}
 
@@ -145,7 +133,9 @@ func (l *Localizer) loadCatalog(locale string, required bool) (map[string]any, e
 		if required {
 			return nil, fmt.Errorf("locale catalog not found: %s", path)
 		}
-		return map[string]any{}, nil
+		empty := map[string]any{}
+		l.catalogs[locale] = empty
+		return empty, nil
 	}
 	body = bytes.TrimPrefix(body, []byte{0xEF, 0xBB, 0xBF})
 
@@ -156,42 +146,74 @@ func (l *Localizer) loadCatalog(locale string, required bool) (map[string]any, e
 	if catalog == nil {
 		return nil, errors.New("locale catalog must contain a JSON object")
 	}
-	l.catalogCache[locale] = catalog
-	return catalog, nil
-}
 
-func (l *Localizer) catalogFor(locale string) map[string]any {
-	catalog, err := l.loadCatalog(locale, false)
-	if err != nil {
-		return map[string]any{}
-	}
-	return catalog
-}
-
-func (l *Localizer) catalogLocaleName(locale string) string {
-	if cached, ok := l.nameCache[locale]; ok {
-		return cached
-	}
-
-	name := locale
-	catalog, err := l.loadCatalog(locale, false)
-	if err == nil {
-		if meta, ok := catalog["meta"].(map[string]any); ok {
-			if raw, ok := meta["name"].(string); ok {
-				raw = strings.TrimSpace(raw)
-				if raw != "" {
-					name = raw
-				}
+	l.catalogs[locale] = catalog
+	l.localeNames[locale] = locale
+	if meta, ok := catalog["meta"].(map[string]any); ok {
+		if raw, ok := meta["name"].(string); ok {
+			if name := strings.TrimSpace(raw); name != "" {
+				l.localeNames[locale] = name
 			}
 		}
 	}
-
-	l.nameCache[locale] = name
-	return name
+	return catalog, nil
 }
 
-func (l *Localizer) sortedLocaleCodes() []string {
-	entries, err := os.ReadDir(l.localesDir)
+func (l *Localizer) buildLocaleMetadata(discovered []string) {
+	unique := make(map[string]struct{}, len(discovered)+1)
+	for _, code := range discovered {
+		if strings.TrimSpace(code) == "" {
+			continue
+		}
+		unique[code] = struct{}{}
+	}
+	if strings.TrimSpace(l.defaultLocale) != "" {
+		unique[l.defaultLocale] = struct{}{}
+	}
+
+	l.localeCodes = make([]string, 0, len(unique))
+	for code := range unique {
+		l.localeCodes = append(l.localeCodes, code)
+		if _, ok := l.localeNames[code]; !ok {
+			l.localeNames[code] = code
+		}
+	}
+	sort.Strings(l.localeCodes)
+
+	for _, code := range l.localeCodes {
+		name := l.catalogLocaleName(code)
+		normalizedCode := strings.ToLower(code)
+		l.localeAliases[normalizedCode] = code
+		l.localeAliases[strings.ReplaceAll(normalizedCode, "-", "")] = code
+
+		short := strings.ToLower(strings.SplitN(code, "-", 2)[0])
+		if _, ok := l.localeAliases[short]; !ok {
+			l.localeAliases[short] = code
+		}
+
+		normalizedName := strings.ToLower(strings.TrimSpace(name))
+		if normalizedName != "" {
+			l.localeAliases[normalizedName] = code
+		}
+	}
+}
+
+func (l *Localizer) catalogFor(locale string) map[string]any {
+	if catalog, ok := l.catalogs[locale]; ok {
+		return catalog
+	}
+	return map[string]any{}
+}
+
+func (l *Localizer) catalogLocaleName(locale string) string {
+	if name, ok := l.localeNames[locale]; ok && strings.TrimSpace(name) != "" {
+		return name
+	}
+	return locale
+}
+
+func discoverLocaleCodes(localesDir string) []string {
+	entries, err := os.ReadDir(localesDir)
 	if err != nil {
 		return nil
 	}

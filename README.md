@@ -1,5 +1,7 @@
 # Epic Assets Notify Bot
 
+<img width="1024" height="1024" alt="epic_assets_avatar" src="https://github.com/user-attachments/assets/3ba5ab1d-9fba-41a0-bae3-2a557eeefb91" />
+
 Discord bot that tracks current `Limited-Time Free` assets on Fab and posts updates to subscribed Discord channels or direct messages.
 
 ## Features
@@ -112,12 +114,6 @@ Optional legacy migration image:
 docker build --target migrate-legacy -t epic-assets-migrate .
 docker run --rm -e ASSETS_BOT_DATA_DIR=/data -v $(pwd)/data:/data epic-assets-migrate
 ```
-
-## Notes
-
-- The repository is now Go-only in production; the old Python implementation has been removed.
-- User-facing strings still live in `locales/`.
-- Fab scraping uses Playwright with headless Firefox to avoid the raw-request block on simple HTTP fetches.
 
 ## License
 

@@ -12,7 +12,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-from .config import get_data_folder, get_database_url, load_legacy_snapshot
+from .config import get_data_folder, get_database_url
 from .database import DatabaseManager, DatabaseSnapshot
 from .localization import Localizer
 from .scraper import Asset, get_free_assets
@@ -72,9 +72,6 @@ class EpicAssetsNotifyBot(commands.Bot):
         ensure_directory(self.data_folder)
 
         await self.database.initialize()
-        await self.database.import_legacy_snapshot_if_empty(
-            load_legacy_snapshot(self.data_folder, self.state_normalizer)
-        )
         await self._reload_state_from_database()
 
     async def on_ready(self):

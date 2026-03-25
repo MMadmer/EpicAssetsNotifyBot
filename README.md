@@ -12,7 +12,8 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 - Built-in support for major world languages
 - Asset links with image attachments
 - Externalized localization catalogs in `locales/`
-- Simple JSON backups for subscriptions, channel locales, DM user locales, and the latest asset snapshot
+- SQLite database storage for subscriptions, user profiles, latest assets, and deadline state
+- Safe one-time migration from legacy JSON backups to the database
 
 ## Supported Languages
 
@@ -65,6 +66,20 @@ python main.py
 | --- | --- | --- | --- |
 | `ASSETS_BOT_TOKEN` | Yes | - | Discord bot token |
 | `ASSETS_BOT_LOCALE` | No | `ru-RU` | Default locale for DMs without a personal override and for channels without a saved locale |
+| `ASSETS_BOT_DATA_DIR` | No | `/data` on Linux, `data` on Windows | Directory that stores the SQLite database and any legacy JSON files |
+| `ASSETS_BOT_DATABASE_URL` | No | `sqlite+aiosqlite:///<data-dir>/bot.db` | Explicit SQLAlchemy connection string; if omitted, the bot uses SQLite inside the data directory |
+
+## Database Migration
+
+On the first startup with a fresh database, the bot automatically imports legacy JSON files from the data directory if they exist. The legacy files are left untouched for rollback safety.
+
+You can also run the migration manually before deploying the new version:
+
+```bash
+python migrate_json_to_db.py
+```
+
+The script is idempotent: if the database already contains data, it exits without overwriting anything.
 
 ## Localization
 

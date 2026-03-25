@@ -29,6 +29,13 @@ def load_json(path: Path, default: T) -> T:
     return data
 
 
+def load_json_if_exists(path: Path, default: T) -> T:
+    if not path.exists():
+        return default
+
+    return load_json(path, default)
+
+
 def save_json(path: Path, payload: Any, log_message: str) -> None:
     ensure_directory(path.parent)
     with path.open("w", encoding="utf-8") as file:

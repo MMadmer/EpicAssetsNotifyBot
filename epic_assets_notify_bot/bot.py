@@ -1,44 +1,29 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import BytesIO
-from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any
 
 import aiohttp
 import discord
 from discord.ext import commands
 from loguru import logger
 
+from .config import get_data_folder, get_database_url, load_legacy_snapshot
+from .database import DatabaseManager, DatabaseSnapshot
 from .localization import Localizer
-from .scraper import Asset, DeadlineInfo, get_free_assets
-from .storage import ensure_directory, load_json, save_json
+from .scraper import Asset, get_free_assets
+from .state import ChannelSubscription, StateNormalizer, StoredDeadline, UserProfile
+from .storage import ensure_directory
 
 
 @dataclass(frozen=True)
 class AttachmentPayload:
     filename: str
     content: bytes
-
-
-class ChannelSubscription(TypedDict):
-    id: int
-    shown_assets: bool
-    locale: str
-
-
-class UserProfile(TypedDict):
-    id: int
-    shown_assets: bool
-    locale: str
-    subscribed: bool
-
-
-StoredDeadline = DeadlineInfo | str | None
 
 
 def is_admin(ctx: commands.Context) -> bool:
@@ -58,28 +43,46 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.token = token
         self.localizer = localizer
         self.base_locale = localizer.normalize_locale(localizer.locale) or localizer.default_locale
-        self.data_folder = Path("/data") if os.name != "nt" else Path("data")
-        self.channels_backup_path = self.data_folder / "subscribers_channels_backup.json"
-        self.users_backup_path = self.data_folder / "subscribers_users_backup.json"
-        self.assets_backup_path = self.data_folder / "assets_backup.json"
-        self.deadline_backup_path = self.data_folder / "deadline_backup.json"
+        self.state_normalizer = StateNormalizer(localizer=localizer, base_locale=self.base_locale)
+        self.data_folder = get_data_folder()
+        self.database = DatabaseManager(get_database_url(self.data_folder))
 
-        self.subscribed_channels = self._normalize_channels(load_json(self.channels_backup_path, []))
-        self.user_profiles = self._normalize_user_profiles(load_json(self.users_backup_path, []))
-        self.assets_list = self._normalize_assets(load_json(self.assets_backup_path, []))
-        self.deadline_data = self._normalize_deadline(load_json(self.deadline_backup_path, ""))
+        self.subscribed_channels: list[ChannelSubscription] = []
+        self.user_profiles: list[UserProfile] = []
+        self.assets_list: list[Asset] = []
+        self.deadline_data: StoredDeadline = None
 
         self.next_check_time = None
         self.delete_after = 10
         self.backup_delay = 900
         self.message_delay = 0.5
+        self._background_tasks_started = False
 
         self.add_commands()
 
+    async def setup_hook(self) -> None:
+        if not self.data_folder.exists():
+            logger.info(f"Creating data folder at {self.data_folder}")
+        ensure_directory(self.data_folder)
+
+        await self.database.initialize()
+        await self.database.migrate_legacy_snapshot_if_empty(
+            load_legacy_snapshot(self.data_folder, self.state_normalizer)
+        )
+        await self._reload_state_from_database()
+
     async def on_ready(self):
         logger.info(f"Logged in as {self.user}")
-        self.loop.create_task(self.set_daily_check())
-        self.loop.create_task(self.backup_loop())
+        if self._background_tasks_started:
+            return
+
+        self._background_tasks_started = True
+        asyncio.create_task(self.set_daily_check())
+        asyncio.create_task(self.backup_loop())
+
+    async def close(self) -> None:
+        await self.database.dispose()
+        await super().close()
 
     def run_bot(self):
         if not self.data_folder.exists():
@@ -90,97 +93,23 @@ class EpicAssetsNotifyBot(commands.Bot):
         self.run(self.token)
 
     def _normalize_channels(self, payload: Any) -> list[ChannelSubscription]:
-        if not isinstance(payload, list):
-            return []
-
-        normalized_channels: dict[int, ChannelSubscription] = {}
-        for item in payload:
-            if not isinstance(item, dict):
-                continue
-
-            channel_id = item.get("id")
-            if not isinstance(channel_id, int):
-                continue
-
-            locale = item.get("locale") if isinstance(item.get("locale"), str) else None
-            normalized_channels[channel_id] = {
-                "id": channel_id,
-                "shown_assets": bool(item.get("shown_assets", False)),
-                "locale": self.localizer.normalize_locale(locale) or self.base_locale,
-            }
-
-        return list(normalized_channels.values())
+        return self.state_normalizer.normalize_channels(payload)
 
     def _normalize_user_profiles(self, payload: Any) -> list[UserProfile]:
-        if not isinstance(payload, list):
-            return []
-
-        normalized_profiles: dict[int, UserProfile] = {}
-        for item in payload:
-            if not isinstance(item, dict):
-                continue
-
-            user_id = item.get("id")
-            if not isinstance(user_id, int):
-                continue
-
-            locale = item.get("locale") if isinstance(item.get("locale"), str) else None
-            normalized_profiles[user_id] = {
-                "id": user_id,
-                "shown_assets": bool(item.get("shown_assets", False)),
-                "locale": self.localizer.normalize_locale(locale) or self.base_locale,
-                "subscribed": bool(item.get("subscribed", True)),
-            }
-
-        return list(normalized_profiles.values())
+        return self.state_normalizer.normalize_user_profiles(payload)
 
     def _normalize_assets(self, payload: Any) -> list[Asset]:
-        if not isinstance(payload, list):
-            return []
-
-        normalized_assets: list[Asset] = []
-        for item in payload:
-            if not isinstance(item, dict):
-                continue
-
-            link = item.get("link")
-            if not isinstance(link, str) or not link:
-                continue
-
-            name = item.get("name")
-            image = item.get("image")
-            normalized_assets.append(
-                {
-                    "name": name if isinstance(name, str) and name else None,
-                    "link": link,
-                    "image": image if isinstance(image, str) and image else None,
-                }
-            )
-
-        return normalized_assets
+        return self.state_normalizer.normalize_assets(payload)
 
     def _normalize_deadline(self, payload: Any) -> StoredDeadline:
-        if isinstance(payload, str):
-            return payload or None
+        return self.state_normalizer.normalize_deadline(payload)
 
-        if not isinstance(payload, dict):
-            return None
-
-        required_int_fields = ("day", "month", "year", "hour", "minute")
-        normalized_deadline: dict[str, int | str] = {}
-
-        for field in required_int_fields:
-            value = payload.get(field)
-            if not isinstance(value, int):
-                return None
-            normalized_deadline[field] = value
-
-        gmt_offset = payload.get("gmt_offset")
-        if not isinstance(gmt_offset, str) or not gmt_offset:
-            return None
-        normalized_deadline["gmt_offset"] = gmt_offset
-
-        return normalized_deadline  # type: ignore[return-value]
+    async def _reload_state_from_database(self) -> None:
+        snapshot = await self.database.load_snapshot()
+        self.subscribed_channels = self._normalize_channels(snapshot.channels)
+        self.user_profiles = self._normalize_user_profiles(snapshot.user_profiles)
+        self.assets_list = self._normalize_assets(snapshot.assets)
+        self.deadline_data = self._normalize_deadline(snapshot.deadline)
 
     def _find_channel_subscription(self, channel_id: int) -> ChannelSubscription | None:
         for channel in self.subscribed_channels:
@@ -614,7 +543,10 @@ class EpicAssetsNotifyBot(commands.Bot):
     async def set_daily_check(self):
         while True:
             self.next_check_time = datetime.now() + timedelta(days=1)
-            await self.check_and_notify_assets()
+            try:
+                await self.check_and_notify_assets()
+            except Exception as exc:
+                logger.exception(f"Scheduled asset check failed: {exc}")
             await asyncio.sleep(24 * 60 * 60)
 
     async def check_and_notify_assets(self):
@@ -684,27 +616,19 @@ class EpicAssetsNotifyBot(commands.Bot):
 
     async def backup_loop(self):
         while True:
-            await self.backup_data()
+            try:
+                await self.backup_data()
+            except Exception as exc:
+                logger.exception(f"Scheduled database sync failed: {exc}")
             await asyncio.sleep(self.backup_delay)
 
     async def backup_data(self):
-        save_json(
-            self.channels_backup_path,
-            self.subscribed_channels,
-            f"Saved {len(self.subscribed_channels)} subscribed channels to backup.",
+        await self.database.save_snapshot(
+            DatabaseSnapshot(
+                channels=self.subscribed_channels,
+                user_profiles=self.user_profiles,
+                assets=self.assets_list,
+                deadline=self.deadline_data,
+            )
         )
-        save_json(
-            self.users_backup_path,
-            self.user_profiles,
-            f"Saved {len(self.user_profiles)} user profiles to backup.",
-        )
-        save_json(
-            self.assets_backup_path,
-            self.assets_list,
-            f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.",
-        )
-        save_json(
-            self.deadline_backup_path,
-            self.deadline_data or "",
-            "Saved deadline data to backup.",
-        )
+        logger.info("Persisted bot state to database.")

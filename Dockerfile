@@ -9,9 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pip install --no-cache-dir \
     playwright \
     aiohttp \
+    aiosqlite \
     discord.py \
     beautifulsoup4 \
     loguru \
+    sqlalchemy \
     pyvirtualdisplay \
     && playwright install --with-deps --force firefox && \
     rm -rf /usr/local/bin/chromium /usr/local/bin/webkit \
@@ -22,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV MOZ_REMOTE_SETTINGS_DEVTOOLS=1
 
 WORKDIR /app
-COPY main.py LICENSE README.md /app/
+COPY main.py migrate_json_to_db.py LICENSE README.md /app/
 COPY epic_assets_notify_bot /app/epic_assets_notify_bot
 COPY locales /app/locales
 

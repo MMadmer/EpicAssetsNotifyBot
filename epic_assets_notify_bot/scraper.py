@@ -5,6 +5,7 @@ import os
 import random
 import re
 from datetime import datetime, timedelta
+from typing import TypedDict
 from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
@@ -12,16 +13,23 @@ from loguru import logger
 from playwright.async_api import async_playwright
 from pyvirtualdisplay import Display
 
-from .localization import Localizer
-
 Asset = dict[str, str | None]
+
+
+class DeadlineInfo(TypedDict):
+    day: int
+    month: int
+    year: int
+    hour: int
+    minute: int
+    gmt_offset: str
 
 
 def _clean_text(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
 
 
-def _parse_deadline_suffix(heading_text: str, localizer: Localizer) -> str | None:
+def _parse_deadline_info(heading_text: str) -> DeadlineInfo | None:
     """
     Parse strings like:
       "Limited-Time Free (Until Sept 9 at 9:59 AM ET)"
@@ -109,14 +117,14 @@ def _parse_deadline_suffix(heading_text: str, localizer: Localizer) -> str | Non
         else f"GMT{sign}{offset_hours}:{offset_minutes:02d}"
     )
 
-    return localizer.t(
-        "deadline.until",
-        day=day,
-        month_name=localizer.month_name(month, context="format"),
-        hour=hour,
-        minute=minute,
-        gmt_offset=gmt_offset,
-    )
+    return {
+        "day": day,
+        "month": month,
+        "year": year,
+        "hour": hour,
+        "minute": minute,
+        "gmt_offset": gmt_offset,
+    }
 
 
 def _normalize_image_url(url: str | None) -> str | None:
@@ -129,13 +137,11 @@ def _normalize_image_url(url: str | None) -> str | None:
     return url
 
 
-async def get_free_assets(
-    localizer: Localizer, retries: int = 5
-) -> tuple[list[Asset] | None, str | None]:
+async def get_free_assets(retries: int = 5) -> tuple[list[Asset] | None, DeadlineInfo | None]:
     """
     Go to Fab homepage, find 'Limited-Time Free' section, and collect listing cards directly
     from the homepage (no per-listing navigation).
-    Returns: (assets, deadline_suffix)
+    Returns: (assets, deadline_info)
     """
     homepage_url = "https://www.fab.com/"
     display = Display() if not os.getenv("DISPLAY") else None
@@ -177,9 +183,7 @@ async def get_free_assets(
                         await asyncio.sleep(random.uniform(5, 9))
                         continue
 
-                    deadline_suffix = (
-                        _parse_deadline_suffix(heading_text, localizer) if heading_text else None
-                    )
+                    deadline_info = _parse_deadline_info(heading_text) if heading_text else None
 
                     items: list[Asset] = []
                     seen_links: set[str] = set()
@@ -203,13 +207,11 @@ async def get_free_assets(
                                 name = _clean_text(aria_label)
 
                         image_tag = listing.find("img")
-                        image_url = (
-                            image_tag["src"] if image_tag and image_tag.get("src") else None
-                        )
+                        image_url = image_tag["src"] if image_tag and image_tag.get("src") else None
 
                         items.append(
                             {
-                                "name": name or localizer.t("assets.untitled"),
+                                "name": name or None,
                                 "link": link,
                                 "image": _normalize_image_url(image_url),
                             }
@@ -217,10 +219,10 @@ async def get_free_assets(
 
                     if not items:
                         logger.info("Limited-Time Free section is empty on homepage.")
-                        return [], deadline_suffix
+                        return [], deadline_info
 
                     logger.info(f"Collected {len(items)} listing cards from homepage.")
-                    return items, deadline_suffix
+                    return items, deadline_info
 
             except Exception as exc:
                 logger.error(f"Homepage parse error: {exc}. Retrying {attempt}/{retries}...")

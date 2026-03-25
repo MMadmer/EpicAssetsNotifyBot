@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
+from typing import Any, TypedDict
 
 import aiohttp
 import discord
@@ -14,7 +15,7 @@ from discord.ext import commands
 from loguru import logger
 
 from .localization import Localizer
-from .scraper import Asset, get_free_assets
+from .scraper import Asset, DeadlineInfo, get_free_assets
 from .storage import ensure_directory, load_json, save_json
 
 
@@ -22,6 +23,22 @@ from .storage import ensure_directory, load_json, save_json
 class AttachmentPayload:
     filename: str
     content: bytes
+
+
+class ChannelSubscription(TypedDict):
+    id: int
+    shown_assets: bool
+    locale: str
+
+
+class UserProfile(TypedDict):
+    id: int
+    shown_assets: bool
+    locale: str
+    subscribed: bool
+
+
+StoredDeadline = DeadlineInfo | str | None
 
 
 def is_admin(ctx: commands.Context) -> bool:
@@ -40,18 +57,17 @@ class EpicAssetsNotifyBot(commands.Bot):
 
         self.token = token
         self.localizer = localizer
+        self.base_locale = localizer.normalize_locale(localizer.locale) or localizer.default_locale
         self.data_folder = Path("/data") if os.name != "nt" else Path("data")
         self.channels_backup_path = self.data_folder / "subscribers_channels_backup.json"
         self.users_backup_path = self.data_folder / "subscribers_users_backup.json"
         self.assets_backup_path = self.data_folder / "assets_backup.json"
         self.deadline_backup_path = self.data_folder / "deadline_backup.json"
 
-        self.subscribed_channels = load_json(self.channels_backup_path, [])
-        self.subscribed_users = load_json(self.users_backup_path, [])
-        self.assets_list = load_json(self.assets_backup_path, [])
-        self.deadline_suffix = load_json(self.deadline_backup_path, "")
-        if not isinstance(self.deadline_suffix, str):
-            self.deadline_suffix = ""
+        self.subscribed_channels = self._normalize_channels(load_json(self.channels_backup_path, []))
+        self.user_profiles = self._normalize_user_profiles(load_json(self.users_backup_path, []))
+        self.assets_list = self._normalize_assets(load_json(self.assets_backup_path, []))
+        self.deadline_data = self._normalize_deadline(load_json(self.deadline_backup_path, ""))
 
         self.next_check_time = None
         self.delete_after = 10
@@ -73,25 +89,215 @@ class EpicAssetsNotifyBot(commands.Bot):
         logger.info("Starting bot...")
         self.run(self.token)
 
-    def _compose_header(self) -> str:
-        month_name = self.localizer.month_name(datetime.now().month, context="standalone")
-        if self.deadline_suffix:
-            return self.localizer.t(
+    def _normalize_channels(self, payload: Any) -> list[ChannelSubscription]:
+        if not isinstance(payload, list):
+            return []
+
+        normalized_channels: dict[int, ChannelSubscription] = {}
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+
+            channel_id = item.get("id")
+            if not isinstance(channel_id, int):
+                continue
+
+            locale = item.get("locale") if isinstance(item.get("locale"), str) else None
+            normalized_channels[channel_id] = {
+                "id": channel_id,
+                "shown_assets": bool(item.get("shown_assets", False)),
+                "locale": self.localizer.normalize_locale(locale) or self.base_locale,
+            }
+
+        return list(normalized_channels.values())
+
+    def _normalize_user_profiles(self, payload: Any) -> list[UserProfile]:
+        if not isinstance(payload, list):
+            return []
+
+        normalized_profiles: dict[int, UserProfile] = {}
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+
+            user_id = item.get("id")
+            if not isinstance(user_id, int):
+                continue
+
+            locale = item.get("locale") if isinstance(item.get("locale"), str) else None
+            normalized_profiles[user_id] = {
+                "id": user_id,
+                "shown_assets": bool(item.get("shown_assets", False)),
+                "locale": self.localizer.normalize_locale(locale) or self.base_locale,
+                "subscribed": bool(item.get("subscribed", True)),
+            }
+
+        return list(normalized_profiles.values())
+
+    def _normalize_assets(self, payload: Any) -> list[Asset]:
+        if not isinstance(payload, list):
+            return []
+
+        normalized_assets: list[Asset] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+
+            link = item.get("link")
+            if not isinstance(link, str) or not link:
+                continue
+
+            name = item.get("name")
+            image = item.get("image")
+            normalized_assets.append(
+                {
+                    "name": name if isinstance(name, str) and name else None,
+                    "link": link,
+                    "image": image if isinstance(image, str) and image else None,
+                }
+            )
+
+        return normalized_assets
+
+    def _normalize_deadline(self, payload: Any) -> StoredDeadline:
+        if isinstance(payload, str):
+            return payload or None
+
+        if not isinstance(payload, dict):
+            return None
+
+        required_int_fields = ("day", "month", "year", "hour", "minute")
+        normalized_deadline: dict[str, int | str] = {}
+
+        for field in required_int_fields:
+            value = payload.get(field)
+            if not isinstance(value, int):
+                return None
+            normalized_deadline[field] = value
+
+        gmt_offset = payload.get("gmt_offset")
+        if not isinstance(gmt_offset, str) or not gmt_offset:
+            return None
+        normalized_deadline["gmt_offset"] = gmt_offset
+
+        return normalized_deadline  # type: ignore[return-value]
+
+    def _find_channel_subscription(self, channel_id: int) -> ChannelSubscription | None:
+        for channel in self.subscribed_channels:
+            if channel["id"] == channel_id:
+                return channel
+        return None
+
+    def _find_user_profile(self, user_id: int) -> UserProfile | None:
+        for profile in self.user_profiles:
+            if profile["id"] == user_id:
+                return profile
+        return None
+
+    def _ensure_user_profile(self, user_id: int) -> UserProfile:
+        profile = self._find_user_profile(user_id)
+        if profile is not None:
+            return profile
+
+        profile: UserProfile = {
+            "id": user_id,
+            "shown_assets": False,
+            "locale": self.base_locale,
+            "subscribed": False,
+        }
+        self.user_profiles.append(profile)
+        return profile
+
+    def _get_channel_locale(self, channel_id: int) -> str:
+        channel = self._find_channel_subscription(channel_id)
+        if channel is None:
+            return self.base_locale
+        return channel["locale"]
+
+    def _get_user_locale(self, user_id: int) -> str:
+        profile = self._find_user_profile(user_id)
+        if profile is None:
+            return self.base_locale
+        return profile["locale"]
+
+    def _get_localizer(
+        self,
+        *,
+        user_id: int | None = None,
+        channel_id: int | None = None,
+        locale: str | None = None,
+    ) -> Localizer:
+        effective_locale = locale
+        if effective_locale is None and channel_id is not None:
+            effective_locale = self._get_channel_locale(channel_id)
+        if effective_locale is None and user_id is not None:
+            effective_locale = self._get_user_locale(user_id)
+        if effective_locale is None:
+            effective_locale = self.base_locale
+        return self.localizer.for_locale(effective_locale)
+
+    def _localizer_for_ctx(self, ctx: commands.Context) -> Localizer:
+        if is_dm(ctx):
+            return self._get_localizer(user_id=ctx.author.id)
+        return self._get_localizer(channel_id=ctx.channel.id)
+
+    def _subscribed_users(self) -> list[UserProfile]:
+        return [profile for profile in self.user_profiles if profile["subscribed"]]
+
+    def _deadline_signature(self, deadline: StoredDeadline) -> tuple[Any, ...] | str:
+        if isinstance(deadline, dict):
+            return (
+                deadline["year"],
+                deadline["month"],
+                deadline["day"],
+                deadline["hour"],
+                deadline["minute"],
+                deadline["gmt_offset"],
+            )
+        return deadline or ""
+
+    def _format_deadline_suffix(self, localizer: Localizer) -> str:
+        if isinstance(self.deadline_data, str):
+            return self.deadline_data
+
+        if not isinstance(self.deadline_data, dict):
+            return ""
+
+        return localizer.t(
+            "deadline.until",
+            day=self.deadline_data["day"],
+            month_name=localizer.month_name(self.deadline_data["month"], context="format"),
+            hour=self.deadline_data["hour"],
+            minute=self.deadline_data["minute"],
+            gmt_offset=self.deadline_data["gmt_offset"],
+        )
+
+    def _compose_header(self, localizer: Localizer) -> str:
+        month_name = localizer.month_name(datetime.now().month, context="standalone")
+        deadline_suffix = self._format_deadline_suffix(localizer)
+        if deadline_suffix:
+            return localizer.t(
                 "header.with_deadline",
                 month_name=month_name,
-                deadline_suffix=self.deadline_suffix,
+                deadline_suffix=deadline_suffix,
             )
-        return self.localizer.t("header.without_deadline", month_name=month_name)
+        return localizer.t("header.without_deadline", month_name=month_name)
 
-    async def _build_message_and_attachments(
-        self, assets: list[Asset]
-    ) -> tuple[str, list[AttachmentPayload]]:
-        message = self._compose_header()
+    def _compose_message(self, assets: list[Asset], localizer: Localizer) -> str:
+        message = self._compose_header(localizer)
+        for asset in assets:
+            link = asset.get("link")
+            if not link:
+                continue
+            asset_name = asset.get("name") or localizer.t("assets.untitled")
+            message += f"- [{asset_name}](<{link}>)\n"
+        return message
+
+    async def _build_attachments(self, assets: list[Asset]) -> list[AttachmentPayload]:
         attachments: list[AttachmentPayload] = []
 
         async with aiohttp.ClientSession() as session:
             for asset in assets:
-                message += f"- [{asset['name']}](<{asset['link']}>)\n"
                 image_url = asset.get("image")
                 if not image_url:
                     continue
@@ -99,14 +305,14 @@ class EpicAssetsNotifyBot(commands.Bot):
                 try:
                     async with session.get(image_url, timeout=30) as response:
                         image_data = await response.read()
-                    safe_name = re.sub(r'[\\/*?:"<>|]+', "_", asset["name"])[:100] or "image"
+                    safe_name = re.sub(r'[\\/*?:"<>|]+', "_", asset.get("name") or "image")[:100] or "image"
                     attachments.append(
                         AttachmentPayload(filename=f"{safe_name}.png", content=image_data)
                     )
                 except Exception as exc:
-                    logger.warning(f"Image fetch failed for {asset['link']}: {exc}")
+                    logger.warning(f"Image fetch failed for {asset.get('link')}: {exc}")
 
-        return message, attachments
+        return attachments
 
     def _to_discord_files(self, attachments: list[AttachmentPayload]) -> list[discord.File]:
         return [
@@ -126,81 +332,130 @@ class EpicAssetsNotifyBot(commands.Bot):
         await asyncio.sleep(self.delete_after)
         await sent_message.delete()
 
+    def _locale_choices(self) -> list[str]:
+        choices: list[str] = []
+        for locale_code in self.localizer.available_locales():
+            short_code = locale_code.split("-")[0].lower()
+            if short_code not in choices:
+                choices.append(short_code)
+        return choices
+
+    def _available_locales_label(self) -> str:
+        labels: list[str] = []
+        seen_short_codes: set[str] = set()
+
+        for locale_code, locale_name in self.localizer.available_locales().items():
+            short_code = locale_code.split("-")[0].lower()
+            if short_code in seen_short_codes:
+                labels.append(f"{locale_code} ({locale_name})")
+                continue
+
+            seen_short_codes.add(short_code)
+            labels.append(f"{short_code} ({locale_name})")
+
+        return ", ".join(labels)
+
+    def _locale_command_usage(self, prefix: str) -> str:
+        return f"{prefix}lang <{'|'.join(self._locale_choices())}>"
+
     def add_commands(self):
         @self.command(name="sub")
         async def subscribe(ctx: commands.Context):
-            permission_denied = self.localizer.t("errors.permission_denied")
+            localizer = self._localizer_for_ctx(ctx)
+            permission_denied = localizer.t("errors.permission_denied")
             if not is_admin(ctx) and not is_dm(ctx):
                 await ctx.send(permission_denied)
                 return
 
             if is_dm(ctx):
                 user_id = ctx.author.id
-                if any(user["id"] == user_id for user in self.subscribed_users):
-                    await ctx.send(self.localizer.t("subscribe.dm.already"))
+                profile = self._ensure_user_profile(user_id)
+                if profile["subscribed"]:
+                    await ctx.send(localizer.t("subscribe.dm.already"))
                     return
 
-                self.subscribed_users.append({"id": user_id, "shown_assets": False})
-                await ctx.send(self.localizer.t("subscribe.dm.success"))
+                profile["subscribed"] = True
+                profile["shown_assets"] = False
+                await ctx.send(localizer.t("subscribe.dm.success"))
                 logger.info(f"User {ctx.author} subscribed to asset updates.")
 
-                if self.assets_list and not self.subscribed_users[-1]["shown_assets"]:
-                    message, attachments = await self._build_message_and_attachments(self.assets_list)
+                if self.assets_list and not profile["shown_assets"]:
+                    message = self._compose_message(
+                        self.assets_list,
+                        self._get_localizer(locale=profile["locale"]),
+                    )
+                    attachments = await self._build_attachments(self.assets_list)
                     user = await self.fetch_user(user_id)
                     await self._send_asset_message(user, message, attachments)
-                    self.subscribed_users[-1]["shown_assets"] = True
+                    profile["shown_assets"] = True
+
+                await self.backup_data()
                 return
 
             channel_id = ctx.channel.id
-            if any(channel["id"] == channel_id for channel in self.subscribed_channels):
-                await ctx.send(self.localizer.t("subscribe.channel.already"))
+            if self._find_channel_subscription(channel_id) is not None:
+                await ctx.send(localizer.t("subscribe.channel.already"))
                 return
 
-            self.subscribed_channels.append({"id": channel_id, "shown_assets": False})
-            await ctx.send(
-                self.localizer.t("subscribe.channel.success", channel_name=ctx.channel.name)
-            )
+            channel_subscription: ChannelSubscription = {
+                "id": channel_id,
+                "shown_assets": False,
+                "locale": self.base_locale,
+            }
+            self.subscribed_channels.append(channel_subscription)
+            await ctx.send(localizer.t("subscribe.channel.success", channel_name=ctx.channel.name))
             logger.info(f"Channel {ctx.channel.name} subscribed to asset updates.")
 
-            if self.assets_list and not self.subscribed_channels[-1]["shown_assets"]:
-                message, attachments = await self._build_message_and_attachments(self.assets_list)
+            if self.assets_list and not channel_subscription["shown_assets"]:
+                message = self._compose_message(
+                    self.assets_list,
+                    self._get_localizer(locale=channel_subscription["locale"]),
+                )
+                attachments = await self._build_attachments(self.assets_list)
                 channel = self.get_channel(channel_id)
                 if channel:
                     await self._send_asset_message(channel, message, attachments)
-                    self.subscribed_channels[-1]["shown_assets"] = True
+                    channel_subscription["shown_assets"] = True
+
+            await self.backup_data()
 
         @self.command(name="unsub")
         async def unsubscribe(ctx: commands.Context):
-            permission_denied = self.localizer.t("errors.permission_denied")
+            localizer = self._localizer_for_ctx(ctx)
+            permission_denied = localizer.t("errors.permission_denied")
             if not is_admin(ctx) and not is_dm(ctx):
                 await ctx.send(permission_denied)
                 return
 
             if is_dm(ctx):
                 user_id = ctx.author.id
-                for user in self.subscribed_users:
-                    if user["id"] == user_id:
-                        self.subscribed_users.remove(user)
-                        await ctx.send(self.localizer.t("unsubscribe.success"))
-                        logger.info(f"User {ctx.author} unsubscribed from asset updates.")
-                        return
+                profile = self._find_user_profile(user_id)
+                if profile and profile["subscribed"]:
+                    profile["subscribed"] = False
+                    profile["shown_assets"] = False
+                    await ctx.send(localizer.t("unsubscribe.success"))
+                    logger.info(f"User {ctx.author} unsubscribed from asset updates.")
+                    await self.backup_data()
+                    return
 
-                await ctx.send(self.localizer.t("unsubscribe.dm.not_subscribed"))
+                await ctx.send(localizer.t("unsubscribe.dm.not_subscribed"))
                 return
 
             channel_id = ctx.channel.id
-            for channel in self.subscribed_channels:
-                if channel["id"] == channel_id:
-                    self.subscribed_channels.remove(channel)
-                    await ctx.send(self.localizer.t("unsubscribe.success"))
-                    logger.info(f"Channel {ctx.channel.name} unsubscribed from asset updates.")
-                    return
+            channel = self._find_channel_subscription(channel_id)
+            if channel is not None:
+                self.subscribed_channels.remove(channel)
+                await ctx.send(localizer.t("unsubscribe.success"))
+                logger.info(f"Channel {ctx.channel.name} unsubscribed from asset updates.")
+                await self.backup_data()
+                return
 
-            await ctx.send(self.localizer.t("unsubscribe.channel.not_subscribed"))
+            await ctx.send(localizer.t("unsubscribe.channel.not_subscribed"))
 
         @self.command(name="time")
         async def time_left(ctx: commands.Context):
-            delete_hint = self.localizer.t("time.delete_hint", delete_after=self.delete_after)
+            localizer = self._localizer_for_ctx(ctx)
+            delete_hint = localizer.t("time.delete_hint", delete_after=self.delete_after)
 
             if self.next_check_time:
                 now = datetime.now()
@@ -209,7 +464,7 @@ class EpicAssetsNotifyBot(commands.Bot):
                 minutes, seconds = divmod(remainder, 60)
                 message = "\n".join(
                     [
-                        self.localizer.t(
+                        localizer.t(
                             "time.remaining",
                             hours=hours,
                             minutes=minutes,
@@ -221,14 +476,140 @@ class EpicAssetsNotifyBot(commands.Bot):
                 await self._send_temporary_message(ctx, message)
                 return
 
-            message = "\n".join([self.localizer.t("time.no_schedule"), delete_hint])
+            message = "\n".join([localizer.t("time.no_schedule"), delete_hint])
             await self._send_temporary_message(ctx, message)
+
+        @self.command(name="lang", aliases=["locale", "l"])
+        async def change_locale(ctx: commands.Context, locale: str | None = None):
+            usage = self._locale_command_usage(ctx.clean_prefix)
+
+            if is_dm(ctx):
+                localizer = self._get_localizer(user_id=ctx.author.id)
+                current_locale = self._get_user_locale(ctx.author.id)
+
+                if locale is None:
+                    message = "\n".join(
+                        [
+                            localizer.t(
+                                "locale.dm.current",
+                                locale_name=self.localizer.locale_name(current_locale),
+                                locale_code=current_locale,
+                            ),
+                            localizer.t("locale.available", locales=self._available_locales_label()),
+                            localizer.t("locale.usage", command=usage),
+                        ]
+                    )
+                    await ctx.send(message)
+                    return
+
+                resolved_locale = self.localizer.normalize_locale(locale)
+                if resolved_locale is None:
+                    message = "\n".join(
+                        [
+                            localizer.t("locale.invalid", input_value=locale),
+                            localizer.t("locale.available", locales=self._available_locales_label()),
+                            localizer.t("locale.usage", command=usage),
+                        ]
+                    )
+                    await ctx.send(message)
+                    return
+
+                if current_locale == resolved_locale:
+                    await ctx.send(
+                        localizer.t(
+                            "locale.dm.already",
+                            locale_name=self.localizer.locale_name(resolved_locale),
+                            locale_code=resolved_locale,
+                        )
+                    )
+                    return
+
+                profile = self._ensure_user_profile(ctx.author.id)
+                profile["locale"] = resolved_locale
+                await self.backup_data()
+
+                new_localizer = self._get_localizer(locale=resolved_locale)
+                await ctx.send(
+                    new_localizer.t(
+                        "locale.dm.changed",
+                        locale_name=self.localizer.locale_name(resolved_locale),
+                        locale_code=resolved_locale,
+                    )
+                )
+                return
+
+            localizer = self._get_localizer(channel_id=ctx.channel.id)
+            channel = self._find_channel_subscription(ctx.channel.id)
+            current_locale = self._get_channel_locale(ctx.channel.id)
+
+            if locale is None:
+                message = "\n".join(
+                    [
+                        localizer.t(
+                            "locale.channel.current",
+                            locale_name=self.localizer.locale_name(current_locale),
+                            locale_code=current_locale,
+                        ),
+                        localizer.t("locale.available", locales=self._available_locales_label()),
+                        localizer.t("locale.usage", command=usage),
+                    ]
+                )
+                await ctx.send(message)
+                return
+
+            if not is_admin(ctx):
+                await ctx.send(localizer.t("errors.permission_denied"))
+                return
+
+            resolved_locale = self.localizer.normalize_locale(locale)
+            if resolved_locale is None:
+                message = "\n".join(
+                    [
+                        localizer.t("locale.invalid", input_value=locale),
+                        localizer.t("locale.available", locales=self._available_locales_label()),
+                        localizer.t("locale.usage", command=usage),
+                    ]
+                )
+                await ctx.send(message)
+                return
+
+            if channel is None:
+                message = "\n".join(
+                    [
+                        localizer.t("locale.channel.subscription_required"),
+                        localizer.t("locale.usage", command=usage),
+                    ]
+                )
+                await ctx.send(message)
+                return
+
+            if current_locale == resolved_locale:
+                await ctx.send(
+                    localizer.t(
+                        "locale.channel.already",
+                        locale_name=self.localizer.locale_name(resolved_locale),
+                        locale_code=resolved_locale,
+                    )
+                )
+                return
+
+            channel["locale"] = resolved_locale
+            await self.backup_data()
+
+            new_localizer = self._get_localizer(locale=resolved_locale)
+            await ctx.send(
+                new_localizer.t(
+                    "locale.channel.changed",
+                    locale_name=self.localizer.locale_name(resolved_locale),
+                    locale_code=resolved_locale,
+                )
+            )
 
         @subscribe.error
         @unsubscribe.error
         async def on_command_error(ctx: commands.Context, error: commands.CommandError):
             if isinstance(error, commands.MissingPermissions):
-                await ctx.send(self.localizer.t("errors.permission_denied"))
+                await ctx.send(self._localizer_for_ctx(ctx).t("errors.permission_denied"))
 
     async def set_daily_check(self):
         while True:
@@ -237,47 +618,66 @@ class EpicAssetsNotifyBot(commands.Bot):
             await asyncio.sleep(24 * 60 * 60)
 
     async def check_and_notify_assets(self):
-        assets, deadline = await get_free_assets(self.localizer)
+        assets, deadline = await get_free_assets()
         if not assets:
             return
 
         def asset_ids(items: list[Asset]) -> set[str]:
-            return {asset["link"] for asset in items or []}
+            return {asset["link"] for asset in items if asset.get("link")}
 
         new_ids = asset_ids(assets)
         old_ids = asset_ids(self.assets_list)
-        deadline = deadline or ""
-        deadline_changed = deadline != (self.deadline_suffix or "")
+        deadline_changed = self._deadline_signature(deadline) != self._deadline_signature(
+            self.deadline_data
+        )
 
         added = new_ids - old_ids
 
         if not deadline_changed and not added and new_ids.issubset(old_ids) and new_ids != old_ids:
-            logger.warning("Shrink-only change detected — likely transient scrape issue. Skipping update.")
+            logger.warning("Shrink-only change detected, likely transient scrape issue. Skipping update.")
             return
 
         if not deadline_changed and new_ids == old_ids:
             return
 
         self.assets_list = assets
-        self.deadline_suffix = deadline
+        self.deadline_data = deadline
 
-        message, attachments = await self._build_message_and_attachments(assets)
+        attachments = await self._build_attachments(assets)
+        message_cache: dict[str, str] = {}
 
         for channel in self.subscribed_channels:
+            channel_locale = channel["locale"]
+            channel_message = message_cache.get(channel_locale)
+            if channel_message is None:
+                channel_message = self._compose_message(
+                    assets,
+                    self._get_localizer(locale=channel_locale),
+                )
+                message_cache[channel_locale] = channel_message
+
             channel_obj = self.get_channel(channel["id"])
             if channel_obj:
-                await self._send_asset_message(channel_obj, message, attachments)
+                await self._send_asset_message(channel_obj, channel_message, attachments)
                 channel["shown_assets"] = True
             await asyncio.sleep(self.message_delay)
 
-        for user in self.subscribed_users:
-            user_obj = await self.fetch_user(user["id"])
-            if user_obj:
-                try:
-                    await self._send_asset_message(user_obj, message, attachments)
-                    user["shown_assets"] = True
-                except Exception as exc:
-                    logger.warning(f"DM failed for {user['id']}: {exc}")
+        for user in self._subscribed_users():
+            user_locale = user["locale"]
+            user_message = message_cache.get(user_locale)
+            if user_message is None:
+                user_message = self._compose_message(
+                    assets,
+                    self._get_localizer(locale=user_locale),
+                )
+                message_cache[user_locale] = user_message
+
+            try:
+                user_obj = await self.fetch_user(user["id"])
+                await self._send_asset_message(user_obj, user_message, attachments)
+                user["shown_assets"] = True
+            except Exception as exc:
+                logger.warning(f"DM failed for {user['id']}: {exc}")
             await asyncio.sleep(self.message_delay)
 
         await self.backup_data()
@@ -295,12 +695,16 @@ class EpicAssetsNotifyBot(commands.Bot):
         )
         save_json(
             self.users_backup_path,
-            self.subscribed_users,
-            f"Saved {len(self.subscribed_users)} subscribed users to backup.",
+            self.user_profiles,
+            f"Saved {len(self.user_profiles)} user profiles to backup.",
         )
         save_json(
             self.assets_backup_path,
             self.assets_list,
             f"Saved {len(self.assets_list) if self.assets_list else 0} assets to backup.",
         )
-        save_json(self.deadline_backup_path, self.deadline_suffix, "Saved deadline suffix to backup.")
+        save_json(
+            self.deadline_backup_path,
+            self.deadline_data or "",
+            "Saved deadline data to backup.",
+        )

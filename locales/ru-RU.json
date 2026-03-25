@@ -75,5 +75,21 @@
     "remaining": "Времени до следующей проверки: {hours:02}:{minutes:02}:{seconds:02}",
     "no_schedule": "Следующая проверка пока не запланирована.",
     "delete_hint": "-# Это сообщение будет удалено через {delete_after} секунд"
+  },
+  "locale": {
+    "dm": {
+      "changed": "Язык бота в личке изменен на {locale_name} ({locale_code}).",
+      "already": "Язык бота в личке уже установлен на {locale_name} ({locale_code}).",
+      "current": "Текущий язык бота в личке: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "Язык бота в этом канале изменен на {locale_name} ({locale_code}).",
+      "already": "Язык бота в этом канале уже установлен на {locale_name} ({locale_code}).",
+      "current": "Текущий язык бота в этом канале: {locale_name} ({locale_code}).",
+      "subscription_required": "Сначала подпишите этот канал на обновления, затем меняйте его язык."
+    },
+    "invalid": "Неизвестный язык: {input_value}.",
+    "available": "Доступные языки: {locales}.",
+    "usage": "Используйте `{command}`."
   }
 }

@@ -8,15 +8,19 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 
 - Daily Fab checks with change detection
 - Channel and DM subscriptions
+- Per-channel language on servers and personal language in DMs
 - Asset links with image attachments
 - Externalized localization with `ru-RU` and `en-US`
-- Simple JSON backups for subscriptions and the latest asset snapshot
+- Simple JSON backups for subscriptions, channel locales, DM user locales, and the latest asset snapshot
 
 ## Commands
 
 - `/assets sub`: subscribe the current channel or DM
 - `/assets unsub`: unsubscribe the current channel or DM
 - `/assets time`: show time left until the next check
+- `/assets lang <ru|en>`: in DMs changes your language, in server channels changes that channel language for admins only
+
+`/assets lang` also shows the current language and available options. Aliases: `/assets locale`, `/assets l`.
 
 ## Quick Start
 
@@ -38,7 +42,7 @@ python main.py
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `ASSETS_BOT_TOKEN` | Yes | - | Discord bot token |
-| `ASSETS_BOT_LOCALE` | No | `ru-RU` | Active locale catalog from `locales/` |
+| `ASSETS_BOT_LOCALE` | No | `ru-RU` | Default locale for DMs without a personal override and for channels without a saved locale |
 
 ## Localization
 

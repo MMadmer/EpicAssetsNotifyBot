@@ -75,5 +75,21 @@
     "remaining": "Time left until next check: {hours:02}:{minutes:02}:{seconds:02}",
     "no_schedule": "No scheduled check found.",
     "delete_hint": "-# This message will be deleted after {delete_after} seconds"
+  },
+  "locale": {
+    "dm": {
+      "changed": "Your DM language is now {locale_name} ({locale_code}).",
+      "already": "Your DM language is already {locale_name} ({locale_code}).",
+      "current": "Current DM language: {locale_name} ({locale_code})."
+    },
+    "channel": {
+      "changed": "This channel language is now {locale_name} ({locale_code}).",
+      "already": "This channel language is already {locale_name} ({locale_code}).",
+      "current": "Current channel language: {locale_name} ({locale_code}).",
+      "subscription_required": "Subscribe this channel first, then change its language."
+    },
+    "invalid": "Unknown language: {input_value}.",
+    "available": "Available languages: {locales}.",
+    "usage": "Use `{command}`."
   }
 }

@@ -1,7 +1,18 @@
+# Build context
 .git
-__pycache__/
-*.pyc
-*.log
+.gitignore
+.dockerignore
+README.md
+LICENSE
+DockerSetup_Linux.sh
+DockerSetup_Windows.bat
+
+# Local runtime artifacts
 data/
 bot.log
+*.log
 *.png
+
+# Editor noise
+.idea/
+.vscode/

@@ -1,7 +1,5 @@
 # Epic Assets Notify Bot
 
-<img width="1024" height="1024" alt="epic_assets_avatar" src="https://github.com/user-attachments/assets/3ba5ab1d-9fba-41a0-bae3-2a557eeefb91" />
-
 Discord bot that tracks current `Limited-Time Free` assets on Fab and posts updates to subscribed Discord channels or direct messages.
 
 ## Features
@@ -13,29 +11,29 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 - Built-in support for major world languages
 - Asset links with optional image attachments per server
 - Externalized localization catalogs in `locales/`
-- SQLite database storage for subscriptions, user profiles, latest assets, and deadline state
-- Safe one-time migration from legacy JSON backups to the database
+- SQLite storage for subscriptions, user profiles, latest assets, and deadline state
+- One-time legacy JSON migration through the Go migrator
 
 ## Supported Languages
 
-- `ar`: العربية
-- `az`: Azərbaycanca
-- `bn`: বাংলা
-- `de`: Deutsch
-- `en`: English
-- `es`: Español
-- `fr`: Français
-- `hi`: हिन्दी
-- `ja`: 日本語
-- `ka`: ქართული
-- `ko`: 한국어
-- `pl`: Polski
-- `pt`: Português
-- `ru`: Русский
-- `tr`: Türkçe
-- `uk`: Українська
-- `ur`: اردو
-- `zh`: 简体中文
+- `ar`
+- `az`
+- `bn`
+- `de`
+- `en`
+- `es`
+- `fr`
+- `hi`
+- `ja`
+- `ka`
+- `ko`
+- `pl`
+- `pt`
+- `ru`
+- `tr`
+- `uk`
+- `ur`
+- `zh`
 
 ## Commands
 
@@ -53,21 +51,28 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 - `/assets time`: show time left until the next check
 - `/assets lang <locale-code>`: in DMs changes your language, in servers changes the server notification language for admins only
 
-`/assets lang` also shows the current language and available options. Aliases: `/assets locale`, `/assets l`.
+Aliases preserved: `/assets locale`, `/assets l`, `/assets on`, `/assets off`, `/assets setchannel`, `/assets setthread`, `/assets clearthread`, `/assets setrole`, `/assets clearrole`, `/assets config`.
 
 ## Quick Start
 
+Requirements:
+
+- Go 1.26.1+
+- A Discord bot token in `ASSETS_BOT_TOKEN`
+- Playwright for Go installed with Firefox support for local runs:
+  `go run github.com/playwright-community/playwright-go/cmd/playwright@v0.5700.1 install firefox`
+- Optional: `ASSETS_BOT_BROWSER` pointing to a Mozilla Firefox executable if you want to use a system Firefox instead of the bundled Playwright Firefox
+
+Run the bot:
+
 ```bash
-git clone https://github.com/MMadmer/EpicAssetsNotifyBot.git
-cd EpicAssetsNotifyBot
-pip install -r requirements.txt
-playwright install firefox
+go run ./cmd/bot
 ```
 
-Set `ASSETS_BOT_TOKEN` in your environment, then run:
+Run the one-time legacy JSON migration:
 
 ```bash
-python main.py
+go run ./cmd/migrate_legacy
 ```
 
 ## Environment
@@ -76,23 +81,44 @@ python main.py
 | --- | --- | --- | --- |
 | `ASSETS_BOT_TOKEN` | Yes | - | Discord bot token |
 | `ASSETS_BOT_LOCALE` | No | `ru-RU` | Default locale for DMs without a personal override and for channels without a saved locale |
-| `ASSETS_BOT_DATA_DIR` | No | `/data` on Linux, `data` on Windows | Directory that stores the SQLite database; legacy JSON files are only used by the manual migration script |
-| `ASSETS_BOT_DATABASE_URL` | No | `sqlite+aiosqlite:///<data-dir>/bot.db` | Explicit SQLAlchemy connection string; if omitted, the bot uses SQLite inside the data directory |
+| `ASSETS_BOT_DATA_DIR` | No | `/data` on Linux, `data` on Windows | Directory that stores the SQLite database |
+| `ASSETS_BOT_DATABASE_URL` | No | `sqlite+aiosqlite:///<data-dir>/bot.db` | Explicit SQLite connection string; if omitted, the bot uses SQLite inside the data directory |
+| `ASSETS_BOT_BROWSER` | No | Playwright Firefox | Optional Firefox executable or absolute path used for headless Fab scraping |
 
-## Database Migration
+## Project Layout
 
-The bot no longer reads legacy JSON files during normal startup. If you still have old `*_backup.json` files, migrate them explicitly before launching the bot:
+- `cmd/bot`: main bot entrypoint
+- `cmd/migrate_legacy`: one-time legacy JSON importer
+- `internal/app`: bootstrap and store adapter
+- `internal/discord`: Discord runtime, commands, scheduling, delivery
+- `internal/fab`: Fab scrape/parser logic
+- `internal/store/sqlite`: SQLite persistence layer
+- `internal/i18n`: locale loading and translation
+- `internal/model`: domain model and normalization
+- `locales/`: localization catalogs
+
+## Docker
+
+Default bot image:
 
 ```bash
-python migrate_json_to_db.py
+docker build -t epic-assets-notify-bot .
+docker run --rm -e ASSETS_BOT_TOKEN=... epic-assets-notify-bot
 ```
 
-After that, start the bot normally. The script is idempotent: if the database already contains data, it exits without overwriting anything.
+Optional legacy migration image:
 
-## Localization
+```bash
+docker build --target migrate-legacy -t epic-assets-migrate .
+docker run --rm -e ASSETS_BOT_DATA_DIR=/data -v $(pwd)/data:/data epic-assets-migrate
+```
 
-All user-facing strings live in `locales/`. Add a new JSON catalog to introduce another language without touching the bot logic.
+## Notes
+
+- The repository is now Go-only in production; the old Python implementation has been removed.
+- User-facing strings still live in `locales/`.
+- Fab scraping uses Playwright with headless Firefox to avoid the raw-request block on simple HTTP fetches.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See `LICENSE`.

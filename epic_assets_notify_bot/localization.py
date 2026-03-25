@@ -123,7 +123,9 @@ class Localizer:
             )
             return {}
 
-        with path.open("r", encoding="utf-8") as file:
+        # Accept BOM-prefixed UTF-8 locale catalogs so deployments don't fail on
+        # locale files rewritten by Windows tooling.
+        with path.open("r", encoding="utf-8-sig") as file:
             catalog = json.load(file)
 
         if not isinstance(catalog, dict):

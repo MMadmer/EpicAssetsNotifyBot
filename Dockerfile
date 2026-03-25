@@ -23,5 +23,7 @@ ENV MOZ_REMOTE_SETTINGS_DEVTOOLS=1
 
 WORKDIR /app
 COPY main.py LICENSE README.md /app/
+COPY epic_assets_notify_bot /app/epic_assets_notify_bot
+COPY locales /app/locales
 
 CMD ["python", "main.py"]

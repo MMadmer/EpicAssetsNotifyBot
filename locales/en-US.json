@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "code": "en-US",
+    "name": "English"
+  },
+  "calendar": {
+    "months": {
+      "standalone": {
+        "wide": {
+          "1": "January",
+          "2": "February",
+          "3": "March",
+          "4": "April",
+          "5": "May",
+          "6": "June",
+          "7": "July",
+          "8": "August",
+          "9": "September",
+          "10": "October",
+          "11": "November",
+          "12": "December"
+        }
+      },
+      "format": {
+        "wide": {
+          "1": "January",
+          "2": "February",
+          "3": "March",
+          "4": "April",
+          "5": "May",
+          "6": "June",
+          "7": "July",
+          "8": "August",
+          "9": "September",
+          "10": "October",
+          "11": "November",
+          "12": "December"
+        }
+      }
+    }
+  },
+  "deadline": {
+    "until": "until {month_name} {day}, {hour}:{minute:02d} {gmt_offset}"
+  },
+  "header": {
+    "with_deadline": "## {month_name} assets from Epic ({deadline_suffix})\n",
+    "without_deadline": "## {month_name} assets from Epic\n"
+  },
+  "assets": {
+    "untitled": "Untitled Listing"
+  },
+  "errors": {
+    "permission_denied": "You do not have the necessary permissions to run this command."
+  },
+  "subscribe": {
+    "dm": {
+      "already": "You are already subscribed.",
+      "success": "Subscribed to asset updates."
+    },
+    "channel": {
+      "already": "This channel is already subscribed.",
+      "success": "Subscribed this channel to asset updates: {channel_name}"
+    }
+  },
+  "unsubscribe": {
+    "success": "Unsubscribed from asset updates.",
+    "dm": {
+      "not_subscribed": "You are not subscribed."
+    },
+    "channel": {
+      "not_subscribed": "This channel is not subscribed."
+    }
+  },
+  "time": {
+    "remaining": "Time left until next check: {hours:02}:{minutes:02}:{seconds:02}",
+    "no_schedule": "No scheduled check found.",
+    "delete_hint": "-# This message will be deleted after {delete_after} seconds"
+  }
+}

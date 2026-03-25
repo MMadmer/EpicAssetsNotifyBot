@@ -1,69 +1,49 @@
-# Epic Games Monthly Free Assets Tracker Bot
+# Epic Assets Notify Bot
 
 <img width="1024" height="1024" alt="epic_assets_avatar" src="https://github.com/user-attachments/assets/3ba5ab1d-9fba-41a0-bae3-2a557eeefb91" />
 
-## Overview
-
-The Epic Games Free Assets Tracker Bot is a Discord bot designed to help Unreal Engine developers stay updated with the latest free assets available on the Epic Games Store. This bot provides an automated solution for tracking, notifying, and displaying the newest free assets of the month, ensuring developers don't miss out on valuable resources.
+Discord bot that tracks current `Limited-Time Free` assets on Fab and posts updates to subscribed Discord channels or direct messages.
 
 ## Features
 
-- **Automated Daily Checks**: The bot performs daily checks for new free assets and notifies subscribed Discord channels and users if there are updates.
-- **Admin and DM Commands**: Users with administrator permissions can manage subscriptions, and individual users can subscribe/unsubscribe via direct messages.
-- **Time Left Notification**: Users can query the bot to find out how much time is left until the next asset check. The bot provides a formatted response and automatically deletes the message after a short period.
-- **Image Attachments**: When new assets are detected, the bot sends a detailed message with asset names, links, and attached images.
+- Daily Fab checks with change detection
+- Channel and DM subscriptions
+- Asset links with image attachments
+- Externalized localization with `ru-RU` and `en-US`
+- Simple JSON backups for subscriptions and the latest asset snapshot
 
 ## Commands
 
-### Admin Commands
+- `/assets sub`: subscribe the current channel or DM
+- `/assets unsub`: unsubscribe the current channel or DM
+- `/assets time`: show time left until the next check
 
-- `/assets sub`: Subscribes the current server channel to asset updates. Can only be run by administrators.
-- `/assets unsub`: Unsubscribes the server from asset updates. Can only be run by administrators.
+## Quick Start
 
-### General Commands
+```bash
+git clone https://github.com/MMadmer/EpicAssetsNotifyBot.git
+cd EpicAssetsNotifyBot
+pip install -r requirements.txt
+playwright install firefox
+```
 
-- `/assets sub`: Subscribes the user to asset updates via direct message.
-- `/assets unsub`: Unsubscribes the user from asset updates via direct message.
-- `/assets time`: Displays the time remaining until the next check for new assets. This message is automatically deleted after 10 seconds.
+Set `ASSETS_BOT_TOKEN` in your environment, then run:
 
-## How It Works
+```bash
+python main.py
+```
 
-1. **Daily Checks**: The bot uses a background task to check for new assets every 24 hours. The time of the next check is stored and updated after each check.
-2. **Asset Retrieval**: The bot scrapes the Epic Games Store page for the latest free assets using BeautifulSoup and Requests libraries.
-3. **Notifications**: If new assets are found, the bot sends a message to the designated channels and subscribed users with the asset details and images.
+## Environment
 
-## Installation
+| Variable | Required | Default | Description |
+| --- | --- | --- | --- |
+| `ASSETS_BOT_TOKEN` | Yes | - | Discord bot token |
+| `ASSETS_BOT_LOCALE` | No | `ru-RU` | Active locale catalog from `locales/` |
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/MMadmer/EpicAssetsNotifyBot.git
-   ```
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Set up your Discord bot token:
-- Go to the Discord Developer Portal.
-- Create a new application and bot.
-- Copy the bot token and replace YOUR_TOKEN_HERE in the code.
-4. Run the bot:
-  ```bash
-  python main.py
-  ```
+## Localization
 
-## Usage
-
-To use the bot, invite it to your Discord server and use the commands listed above. Ensure that the bot has the necessary permissions to read and send messages in the desired channels.
-
-## Contributing
-
-Contributions are welcome! Feel free to submit a pull request or open an issue to suggest improvements or report bugs.
+All user-facing strings live in `locales/`. Add a new JSON catalog to introduce another language without touching the bot logic.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-With this bot, Unreal Engine developers can easily stay up-to-date with the latest free assets from the Epic Games Store, enhancing their development workflow and ensuring they never miss out on valuable resources.
-
+MIT. See [LICENSE](LICENSE).

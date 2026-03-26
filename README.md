@@ -18,24 +18,24 @@ Discord bot that tracks current `Limited-Time Free` assets on Fab and posts upda
 
 ## Supported Languages
 
-- `ar`
-- `az`
-- `bn`
-- `de`
-- `en`
-- `es`
-- `fr`
-- `hi`
-- `ja`
-- `ka`
-- `ko`
-- `pl`
-- `pt`
-- `ru`
-- `tr`
-- `uk`
-- `ur`
-- `zh`
+- `ar`: العربية
+- `az`: Azərbaycanca
+- `bn`: বাংলা
+- `de`: Deutsch
+- `en`: English
+- `es`: Español
+- `fr`: Français
+- `hi`: हिन्दी
+- `ja`: 日本語
+- `ka`: ქართული
+- `ko`: 한국어
+- `pl`: Polski
+- `pt`: Português
+- `ru`: Русский
+- `tr`: Türkçe
+- `uk`: Українська
+- `ur`: اردو
+- `zh`: 简体中文
 
 ## Commands
 
